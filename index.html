@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veronica</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+<div id="empty">Open ⚙ and choose a picture for Veronica</div>
+<img id="face" alt="Veronica" style="display:none">
+<div id="fx"></div>
+<button id="gear" aria-label="Settings">⚙</button>
+</div>
+<div id="status">Waiting</div>
+<div id="log" aria-live="polite"></div>
+<div id="bar">
+<input id="txt" type="text" placeholder="Or type to Veronica…" autocomplete="off">
+<button id="send" aria-label="Send">➤</button>
+<button id="mute" aria-label="Mute mic">🎤</button>
+</div>
+
+<div id="wake"><div><p>Veronica is ready.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed once per visit, because the browser blocks the mic until you do. After that she listens by herself.</p></div></div>
+
+<div id="set">
+<h2 style="margin:0 0 4px">Settings</h2>
+<p>Everything is saved only on this phone.</p>
+<label for="keys">Free API keys, one per line (she switches to the next if one fails)</label>
+<textarea id="keys" rows="6" autocomplete="off" spellcheck="false" placeholder="Paste each key on its own line"></textarea>
+<label for="nm">What should she call you?</label>
+<input id="nm" type="text" autocomplete="off">
+<label for="lang">Your voice language</label>
+<select id="lang"><option value="en-IN">English (India)</option><option value="hi-IN">Hindi</option><option value="en-US">English (US)</option></select>
+<label for="pic">Her picture (from your gallery)</label>
+<input id="pic" type="file" accept="image/*">
+<button class="btn" id="done">Save</button>
+<button class="btn g" id="clr">Erase chat memory</button>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/brain.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/face.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
