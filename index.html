@@ -49,6 +49,11 @@
 <input id="elkey" type="password" autocomplete="off" placeholder="ElevenLabs key">
 <label for="elvoice">Voice ID (optional, from the ElevenLabs voice library)</label>
 <input id="elvoice" type="text" autocomplete="off" placeholder="Leave empty for the default soft voice">
+<label for="vsel">Phone voice (used when the sweet voice isn’t)</label>
+<select id="vsel"></select>
+<label for="vpitch">Voice pitch (higher = cuter)</label>
+<input id="vpitch" type="range" min="0.9" max="1.8" step="0.05">
+<button class="btn g" id="vtest">Hear this voice</button>
 <label>Her videos (from your gallery)</label>
 <label for="vid_idle">Resting / blinking</label><input id="vid_idle" type="file" accept="video/*">
 <label for="vid_talk">Talking</label><input id="vid_talk" type="file" accept="video/*">

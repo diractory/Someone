@@ -2,6 +2,8 @@ var Extras={
  wx:"",wxAt:0,calmOn:false,last:0,
  isWeather:function(t){return/\b(weather|wear|outfit|temperature|umbrella|jacket|mausam|barish|pehnu|pehen)\b|\brain\b/i.test(t)},
  isCalm:function(t){return/\b(calm me|calm down|breathe|breathing|stressed|anxious|anxiety|panic|relax me|tension|ghabra)/i.test(t)},
+ isCompliment:function(t){return/\b(beautiful|pretty|cute|gorgeous|lovely|love you|miss you|sundar|pyari|khoobsurat)\b/i.test(t)},
+ isCrying:function(t){return/\b(crying|cried|tears|heartbroken|depressed|breakdown|ro raha|ro rahi|rona aa|rone)\b/i.test(t)},
  isSleep:function(t){return/good\s?night|going to sleep|go to sleep|sleep now|sone ja|so ja\b|neend aa/i.test(t)},
  weather:async function(){
   var me=this;
