@@ -1,4 +1,4 @@
-var hist=[],notes=[];
+var hist=[],notes=[],sessionFirst=true;
 try{hist=JSON.parse(S.get("v_hist")||"[]")}catch(e){}
 try{notes=JSON.parse(S.get("v_notes")||"[]")}catch(e){}
 var diary=[];try{diary=JSON.parse(S.get("v_diary")||"[]")}catch(e){}
@@ -12,6 +12,12 @@ function add(r,t,instant){
  $("log").scrollTop=1e9;return d;
 }
 function addAction(a){var el=add("v","");var l=document.createElement("a");l.className="btn";l.href=a.url;l.textContent=a.label;el.appendChild(l);$("log").scrollTop=1e9}
+function feelHint(text){
+ var p=[],last=diary[diary.length-1];
+ if(Extras.isHurting(text))p.push(" The user seems to be hurting right now: drop flirting and jokes, show real sorrow and gentle care, listen first, and don’t rush to fix it.");
+ if(sessionFirst&&last&&Date.now()-Date.parse(last.d)<14*864e5)p.push(" This is the first message of this session: gently check in on how they’ve been since "+last.d+" (they seemed "+last.f+"), and offer a little hope in your own words.");
+ sessionFirst=false;return p.join("");
+}
 function save(){S.set("v_hist",JSON.stringify(hist.slice(-30)));S.set("v_notes",JSON.stringify(notes.slice(-100)));S.set("v_diary",JSON.stringify(diary.slice(-40)))}
 
 Voice.onState=function(s){
@@ -27,18 +33,22 @@ async function ask(text){
  text=(text||"").trim();if(!text||busy)return;
  busy=true;add("me",text);hist.push({r:"me",t:text});
  if(Extras.isCompliment(text))Face.blush();
+ if(Extras.isHurting(text)){Face.mood("sad");Face.pop("💧",1)}
  if(Extras.isCrying(text))Face.mood("sad");
+ var gm=Games.match(text);
+ if(gm){Games.open(gm);busy=false;return}
  var act=Actions.match(text);
  if(act){
   hist.push({r:"v",t:act.say});add("v",act.say);addAction(act);save();Face.mood("happy");busy=false;Voice.speak(act.say,"happy");return;
  }
  var loc=Extras.local(text);
- if(loc){hist.push({r:"v",t:loc.say});add("v",loc.say);save();Face.mood(loc.mood);busy=false;Voice.speak(loc.say,loc.mood);loc.run();return}
+ if(loc){var ls=loc.say.replace(/\[[^\]]*\]/g,"").trim();hist.push({r:"v",t:ls});add("v",ls);save();Face.mood(loc.mood);busy=false;Voice.speak(loc.say,loc.mood);loc.run();return}
  var wx=Extras.isWeather(text)?await Extras.weather():"";
+ var hint=feelHint(text);
  status("Veronica is thinking…");
  var out="";
  try{
-  out=await Brain.ask(hist,CFG.persona+wx+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain.ask(hist,CFG.persona+wx+hint+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
   hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
@@ -49,9 +59,10 @@ async function ask(text){
  var fm=out.match(/\[feel:([^\]]{1,20})\]/i);
  if(fm){var fl=fm[1].trim().toLowerCase();if(!/^(neutral|calm|none)$/.test(fl)){diary.push({d:new Date().toISOString().slice(0,10),f:fl,t:text.slice(0,60)});if(/sad|cry|lonely|anxious|stress|hurt|depress|grief|scared|upset/.test(fl)&&!/^(sad|worried)$/.test(mood))mood="sad"}}
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
+ var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
  out=out.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()||"Hmm?";
  Face.mood(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
- Voice.speak(out,mood);
+ Voice.speak(spoken||out,mood);
 }
 Voice.onText=function(t){ask(Voice.fix(t))};
 
@@ -105,3 +116,5 @@ function fillVoices(){
  sel.value=cur;$("vpitch").value=S.get("v_pitch")||"1.4";
 }
 $("vtest").onclick=function(){S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);Voice.unlock();Voice.speaking=true;Voice.browser("Hi, I’m Veronica. Do you like my voice?","happy")};
+
+var _ld=diary[diary.length-1];if(_ld&&Date.now()-Date.parse(_ld.d)<14*864e5)add("v","Welcome back. How are you feeling today?",true);

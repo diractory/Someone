@@ -4,6 +4,7 @@ var Extras={
  isCalm:function(t){return/\b(calm me|calm down|breathe|breathing|stressed|anxious|anxiety|panic|relax me|tension|ghabra)/i.test(t)},
  isCompliment:function(t){return/\b(beautiful|pretty|cute|gorgeous|lovely|love you|miss you|sundar|pyari|khoobsurat)\b/i.test(t)},
  isCrying:function(t){return/\b(crying|cried|tears|heartbroken|depressed|breakdown|ro raha|ro rahi|rona aa|rone)\b/i.test(t)},
+ isHurting:function(t){return/\b(cry|crying|cried|tears|ro raha|ro rahi|rona aa|ro diya|depressed|hopeless|worthless|lonely|akela|akeli|heartbroken|breakup|broke up|i feel alone|can.?t take it)\b/i.test(t)},
  isSleep:function(t){return/good\s?night|going to sleep|go to sleep|sleep now|sone ja|so ja\b|neend aa/i.test(t)},
  weather:async function(){
   var me=this;
@@ -20,7 +21,7 @@ var Extras={
  },
  local:function(t){
   var me=this,nm=(typeof NAME!=="undefined"&&NAME)?", "+NAME:"";
-  if(me.isSleep(t))return{mood:"shy",say:"Goodnight"+nm+". Sleep well. I’ll be right here when you wake up.",run:function(){setTimeout(function(){Voice.setMuted(true);$("night").style.display="flex"},7000)}};
+  if(me.isSleep(t))return{mood:"shy",say:"[whispers] Goodnight"+nm+". Sleep well. I’ll be right here when you wake up.",run:function(){setTimeout(function(){Voice.setMuted(true);$("night").style.display="flex"},7000)}};
   if(me.isCalm(t))return{mood:"calm",say:"I’m right here with you. Breathe with me, nice and slow.",run:function(){me.calm()}};
   return null;
  },
@@ -44,7 +45,7 @@ var Extras={
   st.addEventListener("pointermove",function(e){if(down)dist=Math.max(dist,Math.hypot(e.clientX-sx,e.clientY-sy))});
   st.addEventListener("pointerup",function(){
    if(!down)return;down=false;
-   var stroke=dist>60,R=stroke?[["shy","You’re making me blush."],["happy","Okay okay, I’m blushing now."]]:[["shy","Hehe, that tickles!"],["laugh","Hey! What was that for?"],["happy","Mm, hi you."]],r=R[Math.floor(Math.random()*R.length)];
+   var stroke=dist>60,R=stroke?[["shy","[whispers] You’re making me blush."],["happy","Okay okay, I’m blushing now."]]:[["shy","[giggles] Hehe, that tickles!"],["laugh","[laughs] Hey! What was that for?"],["happy","Mm, hi you."]],r=R[Math.floor(Math.random()*R.length)];
    if(navigator.vibrate)navigator.vibrate(stroke?[20,40,20]:25);
    Face.mood(r[0]);
    if(!busy&&!Voice.speaking&&Date.now()-me.last>4000){me.last=Date.now();Voice.speak(r[1],r[0])}

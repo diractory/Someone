@@ -64,3 +64,29 @@ button{border-radius:50%;width:46px;height:46px;font-size:19px;background:var(--
 #stage.giggling #face,#stage.giggling #vid{animation:gig .6s ease-in-out}
 @keyframes gig{25%{transform:translateY(-5px) rotate(-.8deg)}60%{transform:translateY(2px) rotate(.8deg)}}
 #set input[type=range]{width:100%}
+
+#games{display:none;flex:1;flex-direction:column;align-items:center;min-height:0;padding:6px 10px 10px;overflow-y:auto}
+body.gaming #log,body.gaming #bar,body.gaming #status{display:none}
+body.gaming #games{display:flex}
+body.gaming #stage{flex:0 0 34%}
+#ghead{width:100%;display:flex;align-items:center;gap:8px}
+#ghead b{flex:1;font-size:16px}
+.gbtn{width:auto;height:auto;border-radius:14px;padding:9px 14px;font:inherit;font-size:15px}
+#gmsg{min-height:20px;font-size:14px;color:var(--mut);text-align:center;margin:4px 0}
+#gb{--bs:min(94vw,calc(66vh - 150px));display:flex;justify-content:center;width:100%}
+#gctl{display:flex;gap:10px;margin-top:8px}
+.bd{display:grid;width:var(--bs);height:var(--bs);user-select:none;-webkit-user-select:none}
+.ch{grid-template-columns:repeat(8,1fr)}
+.sq{display:flex;align-items:center;justify-content:center;font-size:calc(var(--bs)/10);line-height:1;position:relative}
+.sq.lt{background:#f1dce8}.sq.dk{background:#b57aa9}
+.sq.sel{outline:3px solid #ffd54a;outline-offset:-3px}
+.sq.tg:after{content:"";width:28%;height:28%;border-radius:50%;background:rgba(40,160,80,.65);position:absolute}
+.pw{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 0 1px #000}
+.pb{color:#1b1226}
+.t3{grid-template-columns:repeat(3,1fr);gap:6px}
+.tc{display:flex;align-items:center;justify-content:center;font-size:calc(var(--bs)/5);background:var(--card);border:1px solid var(--line);border-radius:14px}
+.c4g{grid-template-columns:repeat(7,1fr);height:calc(var(--bs)*6/7);background:#3b2b8a;border-radius:12px;padding:4px;gap:3px}
+.cc{border-radius:50%;background:#150f1d}.cc.c1{background:#ff4b5c}.cc.c2{background:#ffd54a}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:94%}
+.menu .gbtn{padding:18px 8px;background:var(--card);border:1px solid var(--line);color:var(--fg)}
+.rps{text-align:center}.rps .big{font-size:20px;margin:8px 0}.rps .gbtn{font-size:30px;margin:6px;background:var(--card);border:1px solid var(--line);color:var(--fg)}

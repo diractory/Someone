@@ -13,6 +13,7 @@ var Voice={
   me.unlocked=true;
   if(me.pending){var p=me.pending;me.pending=null;me.speak(p[0],p[1])}
  },
+ plain:function(t){return t.replace(/\[(giggles?|chuckles)\]/gi,"hehe, ").replace(/\[(laughs[^\]]*|starts laughing)\]/gi,"haha, ").replace(/\[(sighs|exhales)\]/gi,"hmm, ").replace(/\[gasps?\]/gi,"oh! ").replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()},
  fix:function(t){return t.replace(/\b(jey|hay|hei)\b/gi,"hey").replace(/\b(veronika|varonica|veronic|weronica|beronica)\b/gi,"Veronica")},
  rate:function(m){return({mad:1.12,excited:1.1,jealous:1.05,shy:.92,sad:.9,sleepy:.86,worried:.95,love:.94})[m]||1},
  listen:function(){
@@ -36,7 +37,7 @@ var Voice={
  },
  eleven:async function(text,key,mood){
   var me=this,id=S.get("v_elvoice")||"EXAVITQu4vr4xnSDxMaL";
-  var r=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json","xi-api-key":key},body:JSON.stringify({text:text,model_id:"eleven_flash_v2_5",voice_settings:{stability:0.35,similarity_boost:0.8,style:0.5}})});
+  var r=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json","xi-api-key":key},body:JSON.stringify({text:text,model_id:"eleven_v3",voice_settings:{stability:0.5}})});
   if(!r.ok)throw new Error("HTTP "+r.status);
   var ab=await r.arrayBuffer();
   if(!me.ctx)throw new Error("no audio");
@@ -52,7 +53,7 @@ var Voice={
   var me=this;
   if(!window.speechSynthesis){me.finish();return}
   speechSynthesis.cancel();
-  var u=new SpeechSynthesisUtterance(text),v=me.pick(text);
+  var u=new SpeechSynthesisUtterance(me.plain(text)),v=me.pick(text);
   if(v){u.voice=v;u.lang=v.lang}
   u.pitch=parseFloat(S.get("v_pitch"))||1.4;u.rate=me.rate(mood)*1.02;
   u.onend=u.onerror=function(){me.finish()};
