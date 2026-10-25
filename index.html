@@ -3,72 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d16">
 <title>Veronica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="stage">
-<div id="empty">Open ⚙ and choose a picture or videos for Veronica</div>
+<div id="empty">Open settings and choose a picture for Veronica</div>
 <video id="vid" playsinline muted loop style="display:none"></video>
 <img id="face" alt="Veronica" style="display:none">
-<video id="vid" muted loop playsinline style="display:none"></video>
 <div id="fx"></div>
-<div id="meters"><div class="mt"><i>💗</i><b><s id="m_love"></s></b></div><div class="mt"><i>😊</i><b><s id="m_joy"></s></b></div><div class="mt"><i>😒</i><b><s id="m_jel"></s></b></div></div>
+<div id="top">
+<div id="brand"><span class="dot"></span><b>Veronica</b></div>
+<button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+</div>
+<div id="meters">
+<div class="mt"><i>💗</i><b><s id="m_love"></s></b></div>
+<div class="mt"><i>😊</i><b><s id="m_joy"></s></b></div>
+<div class="mt"><i>😒</i><b><s id="m_jel"></s></b></div>
+</div>
 <div id="chip"><span id="chipe">😌</span><span id="chipn">calm</span></div>
-<button id="gear" aria-label="Settings">⚙</button>
 </div>
 <div id="status">Waiting</div>
 <div id="log" aria-live="polite"></div>
 <div id="bar">
-<input id="txt" type="text" placeholder="Or type to Veronica…" autocomplete="off">
-<button id="gamebtn" aria-label="Games">🎮</button>
-<button id="send" aria-label="Send">➤</button>
-<button id="mute" aria-label="Mute mic">🎤</button>
+<input id="txt" type="text" placeholder="Type to Veronica…" autocomplete="off">
+<button id="gamebtn" class="ic" aria-label="Games"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5M15.5 11h.01M18 14h.01"/></svg></button>
+<button id="mute" aria-label="Microphone"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/><path class="sl" d="M4 4l16 16"/></svg></button>
+<button id="send" class="ic" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
 </div>
 
-<div id="games"><div id="ghead"><b id="gtitle">Games</b><button class="gbtn" id="gback">Menu</button><button class="gbtn" id="gclose" aria-label="Close games">✕</button></div><div id="gmsg"></div><div id="gb"></div><div id="gctl"></div></div>
+<div id="games">
+<div id="ghead"><b id="gtitle">Games</b><button class="gbtn" id="gback">Menu</button><button class="ic" id="gclose" aria-label="Close games"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div id="gmsg"></div><div id="gb"></div><div id="gctl"></div>
+</div>
+
 <div id="calm"><div id="ring"></div><p id="cue">Breathe in</p><button class="btn" id="calmoff">I’m okay now</button></div>
 <div id="night"><p style="font-size:44px;margin:0">🌙</p><p>Shh… she’s sleeping.<br>Tap anywhere to wake her.</p></div>
-<div id="wake"><div><div class="orb">💗</div><h1 style="margin:10px 0 4px;font-weight:600">Veronica</h1><p>She’s ready to talk.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed once per visit, because the browser blocks the mic and sound until you do. After that she listens by herself.</p></div></div>
+<div id="wake"><div><div class="orb">💗</div><h1>Veronica</h1><p>Your companion, assistant and best friend.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed per visit because your browser blocks the mic until you do. After that she listens by herself.</p></div></div>
 
-<div id="set">
-<h2 style="margin:0 0 4px">Settings</h2>
-<p>Everything is saved only on this phone.</p>
-<label for="keys">Free API keys, one per line (she switches to the next if one fails)</label>
-<textarea id="keys" rows="6" autocomplete="off" spellcheck="false" placeholder="Paste each key on its own line"></textarea>
-<label for="nm">What should she call you?</label>
-<input id="nm" type="text" autocomplete="off">
-<label for="lang">Your voice language</label>
-<select id="lang"><option value="en-IN">English (India)</option><option value="hi-IN">Hindi</option><option value="en-US">English (US)</option></select>
-<label for="vname">Her voice</label>
-<select id="vname"><option value="Leda">Leda (young, soft)</option><option value="Aoede">Aoede (bright, breezy)</option><option value="Zephyr">Zephyr (cheerful)</option><option value="Kore">Kore (clear)</option></select>
-<label for="pic">Her picture (from your gallery)</label>
-<input id="pic" type="file" accept="image/*">
-<label>Her videos (optional). A short looping clip for each state. Without a clip she uses the picture.</label>
-<div id="clips"></div>
-<button class="btn g" id="bk">Save backup file</button>
-<label for="rs">Restore a backup</label>
-<input id="rs" type="file" accept="application/json,.json">
-<label for="elkey">Sweeter voice (optional): free key from elevenlabs.io</label>
-<input id="elkey" type="password" autocomplete="off" placeholder="ElevenLabs key">
-<label for="elvoice">Voice ID (optional, from the ElevenLabs voice library)</label>
+<div id="set"><div class="sheet">
+<div class="shead"><h2>Settings</h2><button class="ic" id="setx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<p class="note">Everything is saved only on this phone.</p>
+
+<h3>AI brain</h3>
+<label for="keys">Free API keys, one per line (Gemini, Groq, OpenRouter, Cerebras, Mistral). She switches to the next key if one fails.</label>
+<textarea id="keys" rows="5" autocomplete="off" spellcheck="false" placeholder="Paste each key on its own line"></textarea>
+
+<h3>Voice</h3>
+<label for="elkey">ElevenLabs keys for the human voice, one per line (optional)</label>
+<textarea id="elkey" rows="3" autocomplete="off" spellcheck="false" placeholder="Paste each ElevenLabs key on its own line"></textarea>
+<label for="elvoice">ElevenLabs voice ID (optional)</label>
 <input id="elvoice" type="text" autocomplete="off" placeholder="Leave empty for the default soft voice">
-<label for="vsel">Phone voice (used when the sweet voice isn’t)</label>
+<label for="lang">Your speaking language</label>
+<select id="lang"><option value="en-IN">English (India)</option><option value="hi-IN">Hindi</option><option value="en-US">English (US)</option></select>
+<label for="vsel">Phone voice (used when the human voice isn’t)</label>
 <select id="vsel"></select>
-<label for="vpitch">Voice pitch (higher = cuter)</label>
+<label for="vpitch">Pitch (higher = cuter)</label>
 <input id="vpitch" type="range" min="0.9" max="1.8" step="0.05">
 <button class="btn g" id="vtest">Hear this voice</button>
-<label>Her videos (from your gallery)</label>
-<label for="vid_idle">Resting / blinking</label><input id="vid_idle" type="file" accept="video/*">
-<label for="vid_talk">Talking</label><input id="vid_talk" type="file" accept="video/*">
-<label for="vid_angry">Angry</label><input id="vid_angry" type="file" accept="video/*">
-<label for="vid_happy">Happy / laughing</label><input id="vid_happy" type="file" accept="video/*">
+
+<h3>Her look</h3>
+<label for="pic">Picture</label><input id="pic" type="file" accept="image/*">
+<label for="vid_idle">Video: resting</label><input id="vid_idle" type="file" accept="video/*">
+<label for="vid_talk">Video: talking</label><input id="vid_talk" type="file" accept="video/*">
+<label for="vid_angry">Video: angry</label><input id="vid_angry" type="file" accept="video/*">
+<label for="vid_happy">Video: happy / laughing</label><input id="vid_happy" type="file" accept="video/*">
+
+<h3>You</h3>
+<label for="nm">What should she call you?</label>
+<input id="nm" type="text" autocomplete="off">
+<label class="chk"><input type="checkbox" id="nudge"> She can speak up if I’ve been quiet for a while</label>
+
+<h3>Memory</h3>
 <button class="btn g" id="exp">Download a backup of her memory</button>
 <label for="imp">Restore a backup</label><input id="imp" type="file" accept=".json,application/json">
-<label class="chk"><input type="checkbox" id="nudge"> She can speak up if I’ve been quiet for a while</label>
-<button class="btn" id="done">Save</button>
 <button class="btn g" id="clr">Erase chat memory</button>
-</div>
+
+<button class="btn" id="done">Save</button>
+</div></div>
 
 <script src="js/config.js"></script>
 <script src="js/brain.js"></script>
@@ -78,7 +94,6 @@
 <script src="js/extras.js"></script>
 <script src="js/chess.js"></script>
 <script src="js/games.js"></script>
-<script src="js/actions.js"></script>
 <script src="js/feelings.js"></script>
 <script src="js/app.js"></script>
 </body>

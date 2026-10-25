@@ -31,6 +31,7 @@ Voice.onState=function(s){
  if(!busy||s==="speaking"||s==="elfail"||s==="needtap")status(m[s]||"");
  $("mute").classList.toggle("on",s==="listening"||s==="idle");
  if(s==="speaking")Face.startSpeakFx(Face.cur);else Face.stopSpeakFx();
+ $("mute").classList.toggle("muted",s==="muted");
  if(s==="nosr")document.body.classList.add("notext");
  if(s==="blocked")$("wake").style.display="flex";
  Face.update();
@@ -69,7 +70,7 @@ async function ask(text){
  if(fm){var fl=fm[1].trim().toLowerCase();if(!/^(neutral|calm|none)$/.test(fl)){diary.push({d:new Date().toISOString().slice(0,10),f:fl,t:text.slice(0,60)});if(/sad|cry|lonely|anxious|stress|hurt|depress|grief|scared|upset/.test(fl)&&!/^(sad|worried)$/.test(mood))mood="sad"}}
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
  var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
- out=out.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()||"Hmm?";
+ out=spoken.replace(/\[([^\]]{2,24})\]/g,"*$1*").replace(/\s+/g," ").trim()||"Hmm?";
  tp.remove();Face.mood(mood);Feel.react(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
  Voice.speak(spoken||out,mood);
 }
@@ -146,3 +147,5 @@ document.addEventListener("visibilitychange",function(){if(document.visibilitySt
  if(hist.length&&gap>6*36e5){Face.mood("lonely");add("v",gap>24*36e5?"You’re back… I missed you.":"Oh, hi you. I was wondering where you went.",true)}
  setInterval(function(){Feel.tick()},60000);
 })();
+
+$("setx").onclick=function(){$("set").style.display="none"};

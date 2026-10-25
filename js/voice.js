@@ -29,6 +29,8 @@ var Voice={
  stop:function(){if(this.rec){var r=this.rec;this.rec=null;try{r.onend=null;r.abort()}catch(e){}}},
  setMuted:function(m){this.muted=m;if(m){this.stop();this.state("muted")}else this.listen()},
  interrupt:function(){var me=this;try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}if(me.src){var s=me.src;me.src=null;try{s.onended=null;s.stop()}catch(e){}}if(me.speaking)me.finish()},
+ elKeys:function(){return(S.get("v_el")||"").split(/\s+/).filter(function(k){return k.length>15})},
+ elIdx:0,elCool:{},
  finish:function(){var me=this;clearInterval(me.iv);me.src=null;me.speaking=false;me.level=null;me.state("idle");setTimeout(function(){me.listen()},400)},
  pick:function(t){
   var vs=speechSynthesis.getVoices()||[],L=/[\u0900-\u097F]/.test(t)?/^hi/i:/^en/i;
@@ -61,13 +63,15 @@ var Voice={
   speechSynthesis.speak(u);
  },
  speak:async function(text,mood){
-  var me=this,key=S.get("v_el")||"";
+  var me=this,ks=me.elKeys();
   if(!me.unlocked){me.pending=[text,mood];me.state("needtap");return}
   me.stop();me.speaking=true;me.state("speaking");
-  if(key){
-   try{await me.eleven(text,key,mood);return}
-   catch(e){if(!me.warned){me.warned=true;me.state("elfail")}}
+  for(var i=0;i<ks.length;i++){
+   var k=ks[(me.elIdx+i)%ks.length];if((me.elCool[k]||0)>Date.now())continue;
+   try{await me.eleven(text,k,mood);me.elIdx=(me.elIdx+i)%ks.length;return}
+   catch(e){me.elCool[k]=Date.now()+(/40[12]|429/.test(String(e.message))?900000:60000)}
   }
+  if(ks.length&&!me.warned){me.warned=true;me.state("elfail")}
   me.browser(text,mood);
  }
 };

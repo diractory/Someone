@@ -4,8 +4,8 @@ var Brain={
  msgs:function(hist,asst){
   var out=[];
   hist.slice(-17).forEach(function(m){
-   var role=m.r==="me"?"user":asst,last=out[out.length-1];
-   if(last&&last.role===role)last.text+="\n"+m.t;else out.push({role:role,text:m.t});
+   var role=m.r==="me"?"user":asst,last=out[out.length-1],tt=m.t.replace(/\*([^*]{2,24})\*/g,"[$1]");
+   if(last&&last.role===role)last.text+="\n"+tt;else out.push({role:role,text:tt});
   });
   while(out.length&&out[0].role!=="user")out.shift();
   return out;

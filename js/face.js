@@ -51,7 +51,7 @@ var Face={
  },
  stopSpeakFx:function(){clearInterval(this.fxt)},
  EM:{happy:"💗",excited:"✨",shy:"😳",laugh:"😂",love:"💕",proud:"🌟",curious:"❓",worried:"🥺",sleepy:"💤",sad:"💧",pout:"😤",jealous:"😒",mad:"💢",surprised:"😲",playful:"😜",hurt:"💔",lonely:"🌙",grateful:"🙏",nervous:"😬",hopeful:"🌈",annoyed:"😑",cozy:"☕",bored:"🥱",embarrassed:"🙈",guilty:"😞"},
- COL:{calm:"#9a6bd8",happy:"#ff5fa2",excited:"#e0891a",shy:"#ff6b9a",laugh:"#e5892c",love:"#ff3d8b",proud:"#cf8f12",curious:"#4f9be8",worried:"#7b86c9",sleepy:"#6a5acd",sad:"#4a6fd0",pout:"#e4577c",jealous:"#3fae6a",mad:"#e53950",surprised:"#19a9bd",playful:"#ff7a45",hurt:"#7a5aa8",lonely:"#5a78b8",grateful:"#e0759a",nervous:"#8a78c8",hopeful:"#2fb8a0",annoyed:"#d4682a",cozy:"#c7835a",bored:"#7d8898",embarrassed:"#ff5c7a",guilty:"#8a6fbd"},
+ COL:{calm:"#6ea8ff",happy:"#ff5fa2",excited:"#e0891a",shy:"#ff6b9a",laugh:"#e5892c",love:"#ff3d8b",proud:"#cf8f12",curious:"#4f9be8",worried:"#7b86c9",sleepy:"#6a5acd",sad:"#4a6fd0",pout:"#e4577c",jealous:"#3fae6a",mad:"#e53950",surprised:"#19a9bd",playful:"#ff7a45",hurt:"#7a5aa8",lonely:"#5a78b8",grateful:"#e0759a",nervous:"#8a78c8",hopeful:"#2fb8a0",annoyed:"#d4682a",cozy:"#c7835a",bored:"#7d8898",embarrassed:"#ff5c7a",guilty:"#8a6fbd"},
  emoji:function(m){return this.EM[m]||""},
  theme:function(m){
   document.documentElement.style.setProperty("--pk",this.COL[m]||"#ff5fa2");
