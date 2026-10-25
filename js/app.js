@@ -7,8 +7,9 @@ Voice.lang=S.get("v_lang")||"en-IN";
 
 function status(t){$("status").textContent=t}
 function add(r,t,instant){
- var d=document.createElement("div");d.className="m "+(r==="me"?"u":"v");$("log").appendChild(d);
- if(r==="v"&&t&&!instant&&t.length>3){var i=0,iv=setInterval(function(){i+=2;d.textContent=t.slice(0,i);$("log").scrollTop=1e9;if(i>=t.length)clearInterval(iv)},30)}else d.textContent=t;
+ var d=document.createElement("div"),tx=d;d.className="m "+(r==="me"?"u":"v");$("log").appendChild(d);
+ if(r==="v"){var e=document.createElement("i");e.className="mo";e.textContent=Face.emoji(Face.cur);d.appendChild(e);tx=document.createElement("span");d.appendChild(tx)}
+ if(r==="v"&&t&&!instant&&t.length>3){var i=0,iv=setInterval(function(){i+=2;tx.textContent=t.slice(0,i);$("log").scrollTop=1e9;if(i>=t.length)clearInterval(iv)},30)}else tx.textContent=t;
  $("log").scrollTop=1e9;return d;
 }
 function addAction(a){var el=add("v","");var l=document.createElement("a");l.className="btn";l.href=a.url;l.textContent=a.label;el.appendChild(l);$("log").scrollTop=1e9}
@@ -40,6 +41,7 @@ async function ask(text){
  busy=true;add("me",text);hist.push({r:"me",t:text});
  if(Extras.isCompliment(text))Face.blush();
  if(Extras.isHurting(text)){Face.mood("sad");Face.pop("💧",1)}
+ var fm0=Feel.onUser(text);if(fm0)Face.mood(fm0);
  if(Extras.isCrying(text))Face.mood("sad");
  var gm=Games.match(text);
  if(gm){Games.open(gm);busy=false;return}
@@ -55,20 +57,20 @@ async function ask(text){
  var tp=add("v","");tp.textContent="…";tp.classList.add("typing");lastAct=Date.now();
  var out="";
  try{
-  out=await Brain.ask(hist,CFG.persona+wx+hint+timeHint()+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain.ask(hist,CFG.persona+wx+hint+timeHint()+Feel.hint()+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
   tp.remove();hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
   status(Voice.on?"Listening…":"Type to Veronica");return;
  }
- var mm=out.match(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|calm)\]/i);mood=mm?mm[1].toLowerCase():"calm";
+ var mm=out.match(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|calm)\]/i);mood=mm?mm[1].toLowerCase():"calm";
  var nm=out.match(/\[name:([^\]]{1,30})\]/i);if(nm){NAME=nm[1].trim();S.set("v_name",NAME)}
  var fm=out.match(/\[feel:([^\]]{1,20})\]/i);
  if(fm){var fl=fm[1].trim().toLowerCase();if(!/^(neutral|calm|none)$/.test(fl)){diary.push({d:new Date().toISOString().slice(0,10),f:fl,t:text.slice(0,60)});if(/sad|cry|lonely|anxious|stress|hurt|depress|grief|scared|upset/.test(fl)&&!/^(sad|worried)$/.test(mood))mood="sad"}}
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
- var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
+ var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
  out=out.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()||"Hmm?";
- tp.remove();Face.mood(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
+ tp.remove();Face.mood(mood);Feel.react(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
  Voice.speak(spoken||out,mood);
 }
 Voice.onText=function(t){lastAct=Date.now();ask(Voice.fix(t))};
@@ -138,3 +140,9 @@ setInterval(function(){
 var wl=null;
 function keepAwake(){try{navigator.wakeLock.request("screen").then(function(l){wl=l;l.addEventListener("release",function(){wl=null})}).catch(function(){})}catch(e){}}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&Voice.on&&!wl)keepAwake()});
+
+(function(){
+ var gap=Feel.load();
+ if(hist.length&&gap>6*36e5){Face.mood("lonely");add("v",gap>24*36e5?"You’re back… I missed you.":"Oh, hi you. I was wondering where you went.",true)}
+ setInterval(function(){Feel.tick()},60000);
+})();

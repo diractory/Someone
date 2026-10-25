@@ -15,7 +15,7 @@ var Voice={
  },
  plain:function(t){return t.replace(/\[(giggles?|chuckles)\]/gi,"hehe, ").replace(/\[(laughs[^\]]*|starts laughing)\]/gi,"haha, ").replace(/\[(sighs|exhales)\]/gi,"hmm, ").replace(/\[gasps?\]/gi,"oh! ").replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()},
  fix:function(t){return t.replace(/\b(jey|hay|hei)\b/gi,"hey").replace(/\b(veronika|varonica|veronic|weronica|beronica)\b/gi,"Veronica")},
- rate:function(m){return({mad:1.12,excited:1.1,jealous:1.05,shy:.92,sad:.9,sleepy:.86,worried:.95,love:.94})[m]||1},
+ rate:function(m){return({mad:1.12,excited:1.1,surprised:1.1,nervous:1.08,playful:1.06,jealous:1.05,annoyed:1.05,hopeful:.98,grateful:.96,love:.94,embarrassed:.93,shy:.92,guilty:.92,sad:.9,hurt:.9,lonely:.9,cozy:.9,bored:.88,sleepy:.86,worried:.95})[m]||1},
  listen:function(){
   var me=this;
   if(!me.on||me.muted||me.speaking||me.rec||!me.SR)return;

@@ -40,7 +40,7 @@ var Games={
  close:function(){document.body.classList.remove("gaming");this.cur=null;this.onGive=null},
  say:function(t,m){
   var d=t.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim();
-  $("gmsg").textContent=d;this.fit();add("v",d,true);Face.mood(m);Voice.speak(t,m);
+  $("gmsg").textContent=d;this.fit();Face.mood(m);add("v",d,true);Voice.speak(t,m);
  },
  chat:function(t,m){if(Date.now()-this.last>9000&&!Voice.speaking){this.last=Date.now();this.say(t,m)}},
  menu:function(){
@@ -57,7 +57,7 @@ var Games={
   this.fit();
  },
  finish:function(out){
-  var st=this.st,line,m;
+  var st=this.st,line,m;if(window.Feel)Feel.onGame(out);
   if(out==="ai"){st.w++;st.s=0;m=this.pick(["happy","excited","laugh"]);line=this.pick(["[giggles] I won! Hehe, I actually won!","[laughs] Yay, that one’s mine! Don’t pout, rematch?","I win~ [giggles] Come on, one more game?"])}
   else if(out==="you"){
    st.l++;st.s++;

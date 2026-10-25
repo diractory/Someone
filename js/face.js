@@ -18,14 +18,14 @@ var Face={
  update:function(){
   var u=this.urls,v=$("vid"),sl,m=this.cur;
   if(!(u.idle||u.talk||u.angry||u.happy)){v.style.display="none";return}
-  if(Voice.speaking)sl=(/^(mad|pout|jealous)$/.test(m)&&u.angry)?"angry":(/^(happy|laugh|excited|proud|love)$/.test(m)&&u.happy)?"happy":(u.talk?"talk":"idle");
+  if(Voice.speaking)sl=(/^(mad|pout|jealous|annoyed)$/.test(m)&&u.angry)?"angry":(/^(happy|laugh|excited|proud|love|playful|hopeful|grateful|surprised)$/.test(m)&&u.happy)?"happy":(u.talk?"talk":"idle");
   else sl="idle";
   var src=u[sl]||u.idle||u.talk||u.happy||u.angry;
   if(v.getAttribute("data-s")!==src){v.setAttribute("data-s",src);v.src=src}
   v.style.display="";var p=v.play();if(p&&p.catch)p.catch(function(){});
  },
  mood:function(m){
-  var EM={happy:"💗",excited:"✨",shy:"😳",laugh:"😂",love:"💕",proud:"🌟",curious:"❓",worried:"🥺",sleepy:"💤",sad:"💧",pout:"😤",jealous:"😒",mad:"💢"},e=EM[m];
+  var EM=this.EM,e=EM[m];this.theme(m);$("stage").classList.toggle("tremble",m==="nervous");$("stage").classList.toggle("sulk",/^(jealous|pout|annoyed|hurt)$/.test(m));
   this.cur=m;$("fx").className=m;$("stage").classList.toggle("laugh",m==="laugh");this.update();
   if(!e)return;
   for(var i=0;i<3;i++)setTimeout(function(){var s=document.createElement("span");s.className="fl";s.textContent=e;s.style.left=(15+Math.random()*70)+"%";$("stage").appendChild(s);setTimeout(function(){s.remove()},2300)},i*350);
@@ -39,22 +39,30 @@ var Face={
   var me=this;me.stopSpeakFx();
   me.fxt=setInterval(function(){
    var r=Math.random();
-   if(/^(shy|love)$/.test(m)){if(r<.6)me.blush();else me.pop("💗",1)}
-   else if(/^(laugh|happy|excited)$/.test(m)){if(r<.55)me.giggle();else if(r<.8)me.pop("✨",1);else me.wink()}
-   else if(/^(jealous|pout|mad)$/.test(m)){if(r<.5)me.pop("💢",1);else me.fxClass("giggling",500)}
+   if(/^(shy|love|embarrassed|grateful|cozy)$/.test(m)){if(r<.6)me.blush();else me.pop("💗",1)}
+   else if(/^(laugh|happy|excited|playful|surprised|hopeful)$/.test(m)){if(r<.55)me.giggle();else if(r<.8)me.pop("✨",1);else me.wink()}
+   else if(/^(jealous|pout|mad|annoyed)$/.test(m)){if(r<.5)me.pop("💢",1);else me.fxClass("giggling",500)}
    else if(m==="proud")me.pop("🌟",1);
    else if(m==="curious")me.pop("❓",1);
-   else if(m==="sleepy")me.pop("💤",1);
-   else if(m==="worried"||m==="sad")me.pop("💧",1);
+   else if(/^(sleepy|bored)$/.test(m))me.pop("💤",1);
+   else if(/^(worried|sad|hurt|lonely|nervous|guilty)$/.test(m))me.pop("💧",1);
    else if(r<.3)me.wink();else if(r<.55)me.blush();
   },1500+Math.random()*1000);
  },
  stopSpeakFx:function(){clearInterval(this.fxt)},
+ EM:{happy:"💗",excited:"✨",shy:"😳",laugh:"😂",love:"💕",proud:"🌟",curious:"❓",worried:"🥺",sleepy:"💤",sad:"💧",pout:"😤",jealous:"😒",mad:"💢",surprised:"😲",playful:"😜",hurt:"💔",lonely:"🌙",grateful:"🙏",nervous:"😬",hopeful:"🌈",annoyed:"😑",cozy:"☕",bored:"🥱",embarrassed:"🙈",guilty:"😞"},
+ COL:{calm:"#9a6bd8",happy:"#ff5fa2",excited:"#e0891a",shy:"#ff6b9a",laugh:"#e5892c",love:"#ff3d8b",proud:"#cf8f12",curious:"#4f9be8",worried:"#7b86c9",sleepy:"#6a5acd",sad:"#4a6fd0",pout:"#e4577c",jealous:"#3fae6a",mad:"#e53950",surprised:"#19a9bd",playful:"#ff7a45",hurt:"#7a5aa8",lonely:"#5a78b8",grateful:"#e0759a",nervous:"#8a78c8",hopeful:"#2fb8a0",annoyed:"#d4682a",cozy:"#c7835a",bored:"#7d8898",embarrassed:"#ff5c7a",guilty:"#8a6fbd"},
+ emoji:function(m){return this.EM[m]||""},
+ theme:function(m){
+  document.documentElement.style.setProperty("--pk",this.COL[m]||"#ff5fa2");
+  $("chipe").textContent=this.EM[m]||"😌";$("chipn").textContent=m;
+  var c=$("chip");c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
+ },
  init:function(){
   var me=this;
   setInterval(function(){me.tgt=Voice.speaking?(Voice.level!=null?Voice.level:0.2+Math.random()*0.8):0},70);
   (function loop(){
-   me.amt+=(me.tgt-me.amt)*0.35;
+   me.amt+=(me.tgt-me.amt)*0.35;$("mute").style.setProperty("--lv",me.amt.toFixed(2));
    var f=$("face");
    if(f.style.display!=="none"&&!$("stage").classList.contains("laugh"))f.style.transform=me.amt>0.03?"scale("+(1+me.amt*0.022).toFixed(4)+") translateY("+(me.amt*2).toFixed(1)+"px)":"";
    requestAnimationFrame(loop);

@@ -107,3 +107,39 @@ body.notext #txt{display:block}
 body.notext #send{display:flex;align-items:center;justify-content:center}
 #bar{justify-content:center;gap:16px}
 #mute{width:68px;height:68px;font-size:28px}
+
+@property --pk{syntax:"<color>";inherits:true;initial-value:#ff5fa2}
+:root{transition:--pk .9s ease}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(70% 45% at 50% 0%,color-mix(in srgb,var(--pk) 28%,transparent),transparent)}
+#stage{box-shadow:inset 0 0 70px color-mix(in srgb,var(--pk) 30%,transparent)}
+#meters{position:absolute;left:10px;top:10px;z-index:2;display:flex;flex-direction:column;gap:5px;padding:7px 9px;border-radius:14px;background:rgba(20,12,28,.5);backdrop-filter:blur(6px)}
+.mt{display:flex;align-items:center;gap:6px;font-size:13px}
+.mt i{font-style:normal}
+.mt b{display:block;width:62px;height:6px;border-radius:4px;background:rgba(255,255,255,.2);overflow:hidden}
+.mt s{display:block;height:100%;width:50%;border-radius:4px;transition:width .6s;background:var(--pk);text-decoration:none}
+#m_joy{background:#ffc94a}#m_jel{background:#3fae6a}
+#chip{position:absolute;left:10px;bottom:34px;z-index:2;display:flex;gap:6px;align-items:center;padding:6px 12px;border-radius:20px;background:rgba(20,12,28,.55);backdrop-filter:blur(6px);border:1px solid color-mix(in srgb,var(--pk) 60%,transparent);font-size:13px;text-transform:capitalize}
+#chip.pop{animation:cpop .5s}
+@keyframes cpop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+#stage.tremble #face{animation:trem .16s linear infinite}
+@keyframes trem{50%{transform:translateX(1.5px)}}
+#stage.sulk #face{animation:sulk 5s ease-in-out infinite}
+@keyframes sulk{50%{transform:rotate(-1.2deg) translateY(2px)}}
+#fx.surprised{background:radial-gradient(circle at 50% 45%,rgba(120,230,255,.22),transparent 65%)}
+#fx.playful{background:radial-gradient(circle at 70% 40%,rgba(255,140,80,.22),transparent 60%)}
+#fx.hurt{background:rgba(70,40,110,.38)}
+#fx.lonely{background:rgba(30,50,110,.4)}
+#fx.grateful{background:radial-gradient(circle at 50% 60%,rgba(255,170,200,.25),transparent 65%)}
+#fx.nervous{box-shadow:inset 0 0 60px rgba(150,130,230,.35)}
+#fx.hopeful{background:radial-gradient(circle at 50% 20%,rgba(120,240,210,.22),transparent 65%)}
+#fx.annoyed{box-shadow:inset 0 0 70px rgba(230,120,40,.35)}
+#fx.cozy{background:rgba(200,130,80,.18)}
+#fx.bored{background:rgba(120,130,150,.25)}
+#fx.embarrassed{background:radial-gradient(circle at 35% 55%,rgba(255,80,110,.35),transparent 40%),radial-gradient(circle at 65% 55%,rgba(255,80,110,.35),transparent 40%)}
+#fx.guilty{background:rgba(110,90,160,.3)}
+.v{background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(6px)}
+.mo{font-style:normal;margin-right:6px}
+#mute{background:var(--pk);border-color:var(--pk);box-shadow:0 0 calc(8px + var(--lv,0)*34px) color-mix(in srgb,var(--pk) 70%,transparent);transition:box-shadow .08s}
+.orb{font-size:64px;animation:beat 1.6s ease-in-out infinite}
+@keyframes beat{50%{transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.orb,#stage.sulk #face,#stage.tremble #face{animation:none}}
