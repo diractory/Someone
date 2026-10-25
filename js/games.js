@@ -6,7 +6,12 @@ var Games={
   $("gamebtn").onclick=function(){me.open("menu")};
   $("gclose").onclick=function(){me.close()};
   $("gback").onclick=function(){me.menu()};
+  window.addEventListener("resize",function(){me.fit()});
   $("gctl").onclick=function(e){var a=e.target.dataset&&e.target.dataset.a;if(a==="menu")me.menu();else if(a==="again")me.start(me.cur);else if(a==="give"&&me.onGive)me.onGive()};
+ },
+ fit:function(){
+  var g=$("games"),h=g.clientHeight-$("ghead").offsetHeight-$("gmsg").offsetHeight-$("gctl").offsetHeight-28,w=g.clientWidth-8,s=Math.floor(Math.max(200,Math.min(w,h)));
+  $("gb").style.setProperty("--bs",s+"px");
  },
  save:function(){S.set("v_gst",JSON.stringify(this.st))},
  pick:function(a){return a[Math.floor(Math.random()*a.length)]},
@@ -19,32 +24,37 @@ var Games={
   if(/rock.?paper.?scissors/.test(s))return"rps";
   if(/truth.?(or|and).?dare/.test(s))return"tod";
   if(/\briddles?\b/.test(s))return"riddle";
+  if(/would.?you.?rather/.test(s))return"wyr";
+  if(/(20|twenty).?questions/.test(s))return"q20";
   if(/\b(games?|khel)\b/.test(s))return"menu";
   return null;
  },
  open:function(g){
   document.body.classList.add("gaming");
   if(g==="tod"){this.close();ask("Let’s play truth or dare! Start by giving me one, then we take turns. Keep it fun and sweet.");return}
+  if(g==="wyr"){this.close();ask("Let’s play Would You Rather! Ask me a fun one first, then we take turns.");return}
+  if(g==="q20"){this.close();ask("Let’s play 20 questions. I’ll think of something and you guess by asking yes or no questions. Wait, you think of something instead and I’ll guess by asking yes or no questions. Ready, I’ll start!");return}
   if(g==="riddle"){this.close();ask("Give me a fun riddle to solve, and tell me if I’m right or wrong after I answer.");return}
   if(!g||g==="menu")this.menu();else{this.say("Ooh, you’re on! Let’s play.","excited");this.start(g)}
  },
  close:function(){document.body.classList.remove("gaming");this.cur=null;this.onGive=null},
  say:function(t,m){
   var d=t.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim();
-  $("gmsg").textContent=d;add("v",d,true);Face.mood(m);Voice.speak(t,m);
+  $("gmsg").textContent=d;this.fit();add("v",d,true);Face.mood(m);Voice.speak(t,m);
  },
  chat:function(t,m){if(Date.now()-this.last>9000&&!Voice.speaking){this.last=Date.now();this.say(t,m)}},
  menu:function(){
   var me=this,st=me.st;
   me.cur=null;me.onGive=null;$("gtitle").textContent="Games";$("gctl").innerHTML="";
   $("gmsg").textContent="You "+st.l+" · Veronica "+st.w+" · Draws "+st.d;
-  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="riddle">🧩 Riddles</button></div>';
+  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="riddle">🧩 Riddles</button><button class="gbtn" data-g="wyr">🤔 Would You Rather</button><button class="gbtn" data-g="q20">❓ 20 Questions</button></div>';
   $("gb").onclick=function(e){var g=e.target.dataset&&e.target.dataset.g;if(g)me.open(g)};
  },
  start:function(g){
   this.cur=g;this.onGive=null;
   $("gctl").innerHTML='<button class="gbtn" data-a="give">Give up</button><button class="gbtn" data-a="menu">Menu</button>';
   if(g==="chess")this.chess();else if(g==="ttt")this.ttt();else if(g==="c4")this.c4();else if(g==="rps")this.rps();
+  this.fit();
  },
  finish:function(out){
   var st=this.st,line,m;

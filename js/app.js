@@ -18,13 +18,19 @@ function feelHint(text){
  if(sessionFirst&&last&&Date.now()-Date.parse(last.d)<14*864e5)p.push(" This is the first message of this session: gently check in on how they’ve been since "+last.d+" (they seemed "+last.f+"), and offer a little hope in your own words.");
  sessionFirst=false;return p.join("");
 }
+function timeHint(){
+ var d=new Date(),t=d.toLocaleString("en-IN",{weekday:"long",hour:"numeric",minute:"2-digit",hour12:true,day:"numeric",month:"long"});
+ return " It is now "+t+" for the user. Use this naturally (greetings, asking if they’ve eaten, gently suggesting sleep when it’s very late) without announcing the time every time. Your mood after your last reply was “"+mood+"”; moods fade gradually instead of switching instantly.";
+}
+var lastAct=Date.now(),lastNudge=0;
 function save(){S.set("v_hist",JSON.stringify(hist.slice(-30)));S.set("v_notes",JSON.stringify(notes.slice(-100)));S.set("v_diary",JSON.stringify(diary.slice(-40)))}
 
 Voice.onState=function(s){
- var m={listening:"Listening… just talk",speaking:"Veronica is talking…",muted:"Mic is muted",idle:"Listening…",blocked:"Mic is blocked. Allow it for this page, or type.",nosr:"Voice input isn’t supported in this browser. Type instead.",elfail:"Sweet voice unavailable (key or credits). Using the phone voice.",needtap:"Tap anywhere once so I can talk to you"};
+ var m={listening:"Listening… just talk",speaking:"Veronica is talking…",muted:"Mic is muted",idle:"Listening…",blocked:"Mic is blocked. Allow the mic for this page, then reload.",nosr:"Voice input isn’t supported in this browser. Type instead.",elfail:"Sweet voice unavailable (key or credits). Using the phone voice.",needtap:"Tap anywhere once so I can talk to you"};
  if(!busy||s==="speaking"||s==="elfail"||s==="needtap")status(m[s]||"");
  $("mute").classList.toggle("on",s==="listening"||s==="idle");
  if(s==="speaking")Face.startSpeakFx(Face.cur);else Face.stopSpeakFx();
+ if(s==="nosr")document.body.classList.add("notext");
  if(s==="blocked")$("wake").style.display="flex";
  Face.update();
 };
@@ -46,11 +52,12 @@ async function ask(text){
  var wx=Extras.isWeather(text)?await Extras.weather():"";
  var hint=feelHint(text);
  status("Veronica is thinking…");
+ var tp=add("v","");tp.textContent="…";tp.classList.add("typing");lastAct=Date.now();
  var out="";
  try{
-  out=await Brain.ask(hist,CFG.persona+wx+hint+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain.ask(hist,CFG.persona+wx+hint+timeHint()+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
-  hist.pop();busy=false;Face.mood("sad");
+  tp.remove();hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
   status(Voice.on?"Listening…":"Type to Veronica");return;
  }
@@ -61,19 +68,19 @@ async function ask(text){
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
  var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
  out=out.replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()||"Hmm?";
- Face.mood(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
+ tp.remove();Face.mood(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
  Voice.speak(spoken||out,mood);
 }
-Voice.onText=function(t){ask(Voice.fix(t))};
+Voice.onText=function(t){lastAct=Date.now();ask(Voice.fix(t))};
 
-$("wakebtn").onclick=function(){$("wake").style.display="none";Voice.unlock();Voice.start();if(!Brain.keys().length){status("Open ⚙ and add a free key");$("set").style.display="block"}};
-$("mute").onclick=function(){if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
+$("wakebtn").onclick=function(){$("wake").style.display="none";Voice.unlock();Voice.start();keepAwake();if(!Brain.keys().length){status("Open ⚙ and add a free key");$("set").style.display="block"}};
+$("mute").onclick=function(){if(Voice.speaking){Voice.interrupt();return}if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
 $("send").onclick=function(){var v=$("txt").value;$("txt").value="";ask(v)};
 $("txt").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("send").onclick()}});
-$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";fillVoices();$("set").style.display="block"};
+$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
 $("done").onclick=function(){
  S.set("v_keys",$("keys").value);NAME=$("nm").value.trim();S.set("v_name",NAME);
- Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
+ Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
  Voice.warned=false;Brain.cool={};$("set").style.display="none";if(Voice.on){Voice.stop();Voice.listen()}
 };
 $("clr").onclick=function(){hist=[];notes=[];diary=[];save();$("log").innerHTML="";add("v","Fresh start. Hi again!")};
@@ -103,7 +110,7 @@ if(!hist.length){Face.mood("happy");add("v","Hi, I’m Veronica. Just talk to me
  try{
   var st=await navigator.permissions.query({name:"microphone"});
   if(st.state==="granted"&&Brain.keys().length){
-   $("wake").style.display="none";Voice.start();
+   $("wake").style.display="none";Voice.start();keepAwake();
    document.addEventListener("pointerdown",function f(){Voice.unlock();document.removeEventListener("pointerdown",f)});
   }
  }catch(e){}
@@ -118,3 +125,16 @@ function fillVoices(){
 $("vtest").onclick=function(){S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);Voice.unlock();Voice.speaking=true;Voice.browser("Hi, I’m Veronica. Do you like my voice?","happy")};
 
 var _ld=diary[diary.length-1];if(_ld&&Date.now()-Date.parse(_ld.d)<14*864e5)add("v","Welcome back. How are you feeling today?",true);
+
+setInterval(function(){
+ var now=Date.now();
+ if(S.get("v_nudge")==="0"||busy||!Voice.on||Voice.muted||Voice.speaking||document.visibilityState!=="visible"||document.body.classList.contains("gaming"))return;
+ if(now-lastAct<5*60e3||now-lastNudge<15*60e3)return;
+ lastNudge=now;lastAct=now;
+ var L=[["curious","Hey… you’ve gone quiet. Everything okay?"],["shy","[whispers] I’m still here, you know."],["happy","Want to play a little game while you take a break?"],["curious","Have you had some water lately? Just checking on you."]],p=L[Math.floor(Math.random()*L.length)];
+ Face.mood(p[0]);add("v",p[1].replace(/\[[^\]]*\]/g,"").trim());Voice.speak(p[1],p[0]);
+},30000);
+
+var wl=null;
+function keepAwake(){try{navigator.wakeLock.request("screen").then(function(l){wl=l;l.addEventListener("release",function(){wl=null})}).catch(function(){})}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&Voice.on&&!wl)keepAwake()});

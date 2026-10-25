@@ -28,7 +28,8 @@ var Voice={
  },
  stop:function(){if(this.rec){var r=this.rec;this.rec=null;try{r.onend=null;r.abort()}catch(e){}}},
  setMuted:function(m){this.muted=m;if(m){this.stop();this.state("muted")}else this.listen()},
- finish:function(){var me=this;me.speaking=false;me.level=null;me.state("idle");setTimeout(function(){me.listen()},400)},
+ interrupt:function(){var me=this;try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}if(me.src){var s=me.src;me.src=null;try{s.onended=null;s.stop()}catch(e){}}if(me.speaking)me.finish()},
+ finish:function(){var me=this;clearInterval(me.iv);me.src=null;me.speaking=false;me.level=null;me.state("idle");setTimeout(function(){me.listen()},400)},
  pick:function(t){
   var vs=speechSynthesis.getVoices()||[],L=/[\u0900-\u097F]/.test(t)?/^hi/i:/^en/i;
   var sv=S.get("v_voice");if(sv){var fv=vs.find(function(v){return v.name===sv});if(fv)return fv}
@@ -45,9 +46,9 @@ var Voice={
   var buf=await me.ctx.decodeAudioData(ab),src=me.ctx.createBufferSource(),an=me.ctx.createAnalyser(),d;
   an.fftSize=256;d=new Uint8Array(an.fftSize);src.buffer=buf;src.playbackRate.value=Math.min(1.1,Math.max(0.9,me.rate(mood)));
   src.connect(an);an.connect(me.ctx.destination);
-  var iv=setInterval(function(){an.getByteTimeDomainData(d);var s=0;for(var i=0;i<d.length;i++){var x=(d[i]-128)/128;s+=x*x}me.level=Math.min(1,Math.sqrt(s/d.length)*5)},60);
+  var iv=me.iv=setInterval(function(){an.getByteTimeDomainData(d);var s=0;for(var i=0;i<d.length;i++){var x=(d[i]-128)/128;s+=x*x}me.level=Math.min(1,Math.sqrt(s/d.length)*5)},60);
   src.onended=function(){clearInterval(iv);me.finish()};
-  src.start();
+  me.src=src;src.start();
  },
  browser:function(text,mood){
   var me=this;

@@ -5,6 +5,19 @@ var Extras={
  isCompliment:function(t){return/\b(beautiful|pretty|cute|gorgeous|lovely|love you|miss you|sundar|pyari|khoobsurat)\b/i.test(t)},
  isCrying:function(t){return/\b(crying|cried|tears|heartbroken|depressed|breakdown|ro raha|ro rahi|rona aa|rone)\b/i.test(t)},
  isHurting:function(t){return/\b(cry|crying|cried|tears|ro raha|ro rahi|rona aa|ro diya|depressed|hopeless|worthless|lonely|akela|akeli|heartbroken|breakup|broke up|i feel alone|can.?t take it)\b/i.test(t)},
+ remind:function(t){
+  var s=t.toLowerCase(),m=s.match(/remind me (?:in |after )?(\d+)\s*(second|sec|minute|min|hour|hr|ghante|ghanta)s?\b\s*(?:to |that |about |ki |ke liye )?(.*)$/),tm=!m&&s.match(/\btimer (?:for |of )?(\d+)\s*(second|sec|minute|min|hour|hr)/),x=m||tm;
+  if(!x)return null;
+  var n=+x[1],u=x[2],H=/^(hour|hr|ghant)/.test(u),M=/^(minute|min)/.test(u),ms=n*(H?3600000:M?60000:1000),what=m&&m[3]?m[3].trim():"";
+  if(ms<1000||ms>6*3600000)return null;
+  var label=n+" "+(H?"hour":M?"minute":"second")+(n>1?"s":"");
+  setTimeout(function(){
+   var line=what?"[whispers] Hey, reminder: "+what:"Time’s up! Your "+label+" are over.";
+   if(navigator.vibrate)navigator.vibrate([200,100,200]);
+   Face.mood("excited");add("v",line.replace(/\[[^\]]*\]/g,"").trim());Voice.speak(line,"excited");
+  },ms);
+  return{mood:"happy",say:"Okay, I’ll "+(what?"remind you":"ring you")+" in "+label+". Keep this page open, okay?",run:function(){}};
+ },
  isSleep:function(t){return/good\s?night|going to sleep|go to sleep|sleep now|sone ja|so ja\b|neend aa/i.test(t)},
  weather:async function(){
   var me=this;
@@ -21,6 +34,7 @@ var Extras={
  },
  local:function(t){
   var me=this,nm=(typeof NAME!=="undefined"&&NAME)?", "+NAME:"";
+  var rm=me.remind(t);if(rm)return rm;
   if(me.isSleep(t))return{mood:"shy",say:"[whispers] Goodnight"+nm+". Sleep well. I’ll be right here when you wake up.",run:function(){setTimeout(function(){Voice.setMuted(true);$("night").style.display="flex"},7000)}};
   if(me.isCalm(t))return{mood:"calm",say:"I’m right here with you. Breathe with me, nice and slow.",run:function(){me.calm()}};
   return null;

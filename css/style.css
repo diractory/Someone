@@ -90,3 +90,20 @@ body.gaming #stage{flex:0 0 34%}
 .menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:94%}
 .menu .gbtn{padding:18px 8px;background:var(--card);border:1px solid var(--line);color:var(--fg)}
 .rps{text-align:center}.rps .big{font-size:20px;margin:8px 0}.rps .gbtn{font-size:30px;margin:6px;background:var(--card);border:1px solid var(--line);color:var(--fg)}
+
+.typing{animation:dots 1s infinite}
+@keyframes dots{50%{opacity:.35}}
+#set label.chk{display:flex;align-items:center;gap:10px;color:var(--fg);font-size:15px}
+#set input[type=checkbox]{width:22px;height:22px;flex:none}
+.bd{flex:none}
+.ch{grid-template-rows:repeat(8,1fr)}
+.t3{grid-template-rows:repeat(3,1fr)}
+.sq{min-width:0;min-height:0;overflow:hidden}
+#gb{flex:none}
+body.gaming #stage{flex:0 0 30%}
+
+#txt,#send{display:none}
+body.notext #txt{display:block}
+body.notext #send{display:flex;align-items:center;justify-content:center}
+#bar{justify-content:center;gap:16px}
+#mute{width:68px;height:68px;font-size:28px}
