@@ -48,17 +48,18 @@ async function ask(text){
  if(gm){Games.open(gm);busy=false;return}
  var act=Actions.match(text);
  if(act){
-  hist.push({r:"v",t:act.say});add("v",act.say);addAction(act);save();Face.mood("happy");busy=false;Voice.speak(act.say,"happy");return;
+  hist.push({r:"v",t:act.say});add("v",act.say);if(act.url)addAction(act);save();Face.mood("happy");busy=false;Voice.speak(act.say,"happy");return;
  }
  var loc=Extras.local(text);
  if(loc){var ls=loc.say.replace(/\[[^\]]*\]/g,"").trim();hist.push({r:"v",t:ls});add("v",ls);save();Face.mood(loc.mood);busy=false;Voice.speak(loc.say,loc.mood);loc.run();return}
  var wx=Extras.isWeather(text)?await Extras.weather():"";
+ var wk=await Extras.wiki(text);
  var hint=feelHint(text);
  status("Veronica is thinking…");
  var tp=add("v","");tp.textContent="…";tp.classList.add("typing");lastAct=Date.now();
  var out="";
  try{
-  out=await Brain.ask(hist,CFG.persona+wx+hint+timeHint()+Feel.hint()+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain.ask(hist,CFG.persona+wx+wk+hint+timeHint()+Feel.hint()+(SUM?" Summary of your earlier conversations with the user: "+SUM:"")+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
   tp.remove();hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
@@ -69,10 +70,13 @@ async function ask(text){
  var fm=out.match(/\[feel:([^\]]{1,20})\]/i);
  if(fm){var fl=fm[1].trim().toLowerCase();if(!/^(neutral|calm|none)$/.test(fl)){diary.push({d:new Date().toISOString().slice(0,10),f:fl,t:text.slice(0,60)});if(/sad|cry|lonely|anxious|stress|hurt|depress|grief|scared|upset/.test(fl)&&!/^(sad|worried)$/.test(mood))mood="sad"}}
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
- var spoken=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,"").replace(/\s+/g," ").trim();
- out=spoken.replace(/\[([^\]]{2,24})\]/g,"*$1*").replace(/\s+/g," ").trim()||"Hmm?";
- tp.remove();Face.mood(mood);Feel.react(mood);add("v",out);hist.push({r:"v",t:out});save();busy=false;
- Voice.speak(spoken||out,mood);
+ var clean=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|calm)\]/gi,"").replace(/\[(name|remember|feel):[^\]]*\]/gi,""),sr=Extras.splitReply(clean),tail=sr.tail;
+ var spoken=sr.head.replace(/\s+/g," ").trim()||(tail?"Here you go.":"");
+ out=spoken.replace(/\[([^\]]{2,24})\]/g,"*$1*").trim()||"Hmm?";
+ tp.remove();Face.mood(mood);Feel.react(mood);
+ var bub=add("v",out);if(tail)richTail(bub,tail);
+ hist.push({r:"v",t:tail?out+"\n---\n"+tail.slice(0,3000):out});save();busy=false;
+ Voice.speak(spoken||out,mood);maybeSummarize();
 }
 Voice.onText=function(t){lastAct=Date.now();ask(Voice.fix(t))};
 
@@ -80,20 +84,20 @@ $("wakebtn").onclick=function(){$("wake").style.display="none";Voice.unlock();Vo
 $("mute").onclick=function(){if(Voice.speaking){Voice.interrupt();return}if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
 $("send").onclick=function(){var v=$("txt").value;$("txt").value="";ask(v)};
 $("txt").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("send").onclick()}});
-$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
+$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";$("contacts").value=S.get("v_contacts")||"";fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
 $("done").onclick=function(){
  S.set("v_keys",$("keys").value);NAME=$("nm").value.trim();S.set("v_name",NAME);
- Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
+ Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_contacts",$("contacts").value);S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
  Voice.warned=false;Brain.cool={};$("set").style.display="none";if(Voice.on){Voice.stop();Voice.listen()}
 };
-$("clr").onclick=function(){hist=[];notes=[];diary=[];save();$("log").innerHTML="";add("v","Fresh start. Hi again!")};
+$("clr").onclick=function(){hist=[];notes=[];diary=[];SUM="";S.set("v_sum","");save();$("log").innerHTML="";add("v","Fresh start. Hi again!")};
 $("exp").onclick=function(){
- var b=new Blob([JSON.stringify({v:1,hist:hist,notes:notes,diary:diary,name:NAME})],{type:"application/json"}),a=document.createElement("a");
+ var b=new Blob([JSON.stringify({v:1,hist:hist,notes:notes,diary:diary,sum:SUM,name:NAME})],{type:"application/json"}),a=document.createElement("a");
  a.href=URL.createObjectURL(b);a.download="veronica-backup.json";a.click();
 };
 $("imp").onchange=function(e){
  var f=e.target.files[0];if(!f)return;
- f.text().then(function(t){var d=JSON.parse(t);hist=d.hist||[];notes=d.notes||[];diary=d.diary||[];NAME=d.name||NAME;S.set("v_name",NAME);save();$("log").innerHTML="";hist.slice(-12).forEach(function(m){add(m.r,m.t,true)});status("Backup restored")}).catch(function(){status("That backup file didn’t work")});
+ f.text().then(function(t){var d=JSON.parse(t);hist=d.hist||[];notes=d.notes||[];diary=d.diary||[];SUM=d.sum||SUM;S.set("v_sum",SUM);NAME=d.name||NAME;S.set("v_name",NAME);save();$("log").innerHTML="";hist.slice(-12).forEach(function(m){showMsg(m)});status("Backup restored")}).catch(function(){status("That backup file didn’t work")});
 };
 ["idle","talk","angry","happy"].forEach(function(s){
  $("vid_"+s).onchange=function(e){var f=e.target.files[0];if(f)Face.saveVid(s,f).then(function(){status("Saved the "+s+" video")}).catch(function(){status("Couldn’t save that video. Try a shorter one.")})};
@@ -106,7 +110,7 @@ $("pic").onchange=function(e){
 };
 
 Face.init();Extras.initTouch();Face.set(S.get("v_img"));
-hist.slice(-12).forEach(function(m){add(m.r,m.t,true)});
+hist.slice(-12).forEach(function(m){showMsg(m)});
 if(!hist.length){Face.mood("happy");add("v","Hi, I’m Veronica. Just talk to me, I’m listening. What should I call you?")}
 
 (async function(){
@@ -149,3 +153,28 @@ document.addEventListener("visibilitychange",function(){if(document.visibilitySt
 })();
 
 $("setx").onclick=function(){$("set").style.display="none"};
+
+function richTail(b,t){
+ b.classList.add("rich");
+ var w=document.createElement("div");w.className="tail";
+ t.split(/```/).forEach(function(seg,i){
+  if(i%2===0){if(seg.trim()){var p=document.createElement("div");p.className="tx2";p.textContent=seg.trim();w.appendChild(p)}}
+  else{
+   var pre=document.createElement("pre"),c=document.createElement("code"),cb=document.createElement("button");
+   c.textContent=seg.replace(/^[a-zA-Z0-9+#.-]*\n/,"").replace(/\n$/,"");pre.appendChild(c);
+   cb.className="cp";cb.textContent="Copy";cb.onclick=function(){try{navigator.clipboard.writeText(c.textContent);cb.textContent="Copied"}catch(e){cb.textContent="Press and hold to copy"}};pre.appendChild(cb);w.appendChild(pre);
+  }
+ });
+ b.appendChild(w);$("log").scrollTop=1e9;
+}
+function showMsg(m){
+ var i=m.r==="v"?m.t.indexOf("\n---\n"):-1;
+ if(i>-1){var b=add("v",m.t.slice(0,i),true);richTail(b,m.t.slice(i+5))}else add(m.r,m.t,true);
+}
+var SUM=S.get("v_sum")||"",sumBusy=false,since=0;
+function maybeSummarize(){
+ since++;if(since<12||sumBusy)return;
+ sumBusy=true;since=0;
+ var tr=hist.slice(-24).map(function(m){return(m.r==="me"?"User: ":"Veronica: ")+m.t.slice(0,300)}).join("\n");
+ Brain.ask([{r:"me",t:"Previous memory summary:\n"+(SUM||"(none)")+"\n\nNew conversation:\n"+tr+"\n\nWrite the updated memory summary now."}],"You maintain a compact long-term memory summary of a user’s conversations with their AI companion Veronica. Output ONLY the updated summary, under 160 words, as plain sentences covering who the user is, their studies and goals, feelings and worries, preferences, important events, inside jokes and promises. Keep older important facts. Never include passwords, ID numbers or card numbers.").then(function(t){SUM=String(t).replace(/\[[^\]]*\]/g,"").trim().slice(0,1500);S.set("v_sum",SUM);sumBusy=false}).catch(function(){sumBusy=false});
+}

@@ -17,6 +17,7 @@ var Games={
  pick:function(a){return a[Math.floor(Math.random()*a.length)]},
  match:function(t){
   var s=t.toLowerCase(),v=/\b(play|let.?s|khel|khelo|wanna|chalo|start)\b/.test(s);
+  if(/\bquiz me\b|pharm\w* quiz/.test(s))return"pq";
   if(!v)return null;
   if(/\bchess\b/.test(s))return"chess";
   if(/tic.?tac.?toe/.test(s))return"ttt";
@@ -34,6 +35,7 @@ var Games={
   if(g==="tod"){this.close();ask("Let’s play truth or dare! Start by giving me one, then we take turns. Keep it fun and sweet.");return}
   if(g==="wyr"){this.close();ask("Let’s play Would You Rather! Ask me a fun one first, then we take turns.");return}
   if(g==="q20"){this.close();ask("Let’s play 20 questions. I’ll think of something and you guess by asking yes or no questions. Wait, you think of something instead and I’ll guess by asking yes or no questions. Ready, I’ll start!");return}
+  if(g==="pq"){this.close();ask("Quiz me on B.Pharm subjects, one question at a time. Start with a pharmacology question, wait for my answer, then tell me if I’m right and explain briefly. Mix subjects as we go.");return}
   if(g==="riddle"){this.close();ask("Give me a fun riddle to solve, and tell me if I’m right or wrong after I answer.");return}
   if(!g||g==="menu")this.menu();else{this.say("Ooh, you’re on! Let’s play.","excited");this.start(g)}
  },
@@ -47,7 +49,7 @@ var Games={
   var me=this,st=me.st;
   me.cur=null;me.onGive=null;$("gtitle").textContent="Games";$("gctl").innerHTML="";
   $("gmsg").textContent="You "+st.l+" · Veronica "+st.w+" · Draws "+st.d;
-  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="riddle">🧩 Riddles</button><button class="gbtn" data-g="wyr">🤔 Would You Rather</button><button class="gbtn" data-g="q20">❓ 20 Questions</button></div>';
+  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="pq">💊 Pharmacy Quiz</button><button class="gbtn" data-g="riddle">🧩 Riddles</button><button class="gbtn" data-g="wyr">🤔 Would You Rather</button><button class="gbtn" data-g="q20">❓ 20 Questions</button></div>';
   $("gb").onclick=function(e){var g=e.target.dataset&&e.target.dataset.g;if(g)me.open(g)};
  },
  start:function(g){
