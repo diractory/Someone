@@ -18,7 +18,7 @@
 <div id="fx"></div>
 <div id="top">
 <div id="brand"><span class="dot"></span><b>Veronica</b></div>
-<button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+<div class="tr"><button id="taskbtn" class="ic" aria-label="Tasks and routine"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></button><button id="modebtn" class="ic" aria-label="Switch between voice and chat view"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5A8 8 0 1 1 21 12z"/></svg></button><button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
 </div>
 <div id="meters">
 <div class="mt"><i>💗</i><b><s id="m_love"></s></b></div>
@@ -29,6 +29,7 @@
 </div>
 <div id="status">Waiting</div>
 <div id="log" aria-live="polite"></div>
+<div id="chips"></div>
 <div id="bar">
 <input id="txt" type="text" placeholder="Type to Veronica…" autocomplete="off">
 <button id="gamebtn" class="ic" aria-label="Games"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5M15.5 11h.01M18 14h.01"/></svg></button>
@@ -45,6 +46,14 @@
 <div id="night"><p style="font-size:44px;margin:0">🌙</p><p>Shh… she’s sleeping.<br>Tap anywhere to wake her.</p></div>
 <div id="wake"><div><div class="orb">💗</div><h1>Veronica</h1><p>Your companion, assistant and best friend.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed per visit because your browser blocks the mic until you do. After that she listens by herself.</p></div></div>
 
+<div id="tasks"><div class="sheet">
+<div class="shead"><h2>Tasks &amp; routine</h2><button class="ic" id="tkx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<p class="note">Say “add homework pharmacology assignment due tomorrow”, or add one here. She reminds you while the app is open.</p>
+<div class="addrow"><input id="tkt" type="text" placeholder="What do you need to do?" autocomplete="off"><select id="tkk"><option value="task">Task / homework</option><option value="routine">Daily routine</option></select><input id="tkd" type="date"><button class="btn" id="tka">Add</button></div>
+<h3>Homework &amp; tasks</h3><div id="tklist"></div>
+<h3>Daily routine</h3><div id="tkroutine"></div>
+</div></div>
+
 <div id="set"><div class="sheet">
 <div class="shead"><h2>Settings</h2><button class="ic" id="setx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <p class="note">Everything is saved only on this phone.</p>
@@ -52,6 +61,7 @@
 <h3>AI brain</h3>
 <label for="keys">Free API keys, one per line (Gemini, Groq, OpenRouter, Cerebras, Mistral). She switches to the next key if one fails.</label>
 <textarea id="keys" rows="5" autocomplete="off" spellcheck="false" placeholder="Paste each key on its own line"></textarea>
+<p class="note" id="kinfo"></p>
 
 <h3>Voice</h3>
 <label for="elkey">ElevenLabs keys for the human voice, one per line (optional)</label>
@@ -78,7 +88,7 @@
 <input id="nm" type="text" autocomplete="off">
 <label for="contacts">Contacts for calls and messages, one per line like Mom=+919876543210</label>
 <textarea id="contacts" rows="3" autocomplete="off" spellcheck="false"></textarea>
-<label class="chk"><input type="checkbox" id="nudge"> She can speak up if I’ve been quiet for a while</label>
+<label class="chk"><input type="checkbox" id="nudge"> She can remind and check on me (homework, meals, sleep, quiet moments)</label>
 
 <h3>Memory</h3>
 <button class="btn g" id="exp">Download a backup of her memory</button>
@@ -93,10 +103,12 @@
 <script src="js/voice.js"></script>
 <script src="js/face.js"></script>
 <script src="js/actions.js"></script>
+<script src="js/phone.js"></script>
 <script src="js/extras.js"></script>
 <script src="js/chess.js"></script>
 <script src="js/games.js"></script>
 <script src="js/feelings.js"></script>
+<script src="js/tasks.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

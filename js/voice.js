@@ -3,9 +3,10 @@ var Voice={
  SR:window.SpeechRecognition||window.webkitSpeechRecognition,
  state:function(s){if(this.onState)this.onState(s)},
  start:function(){
-  if(!this.SR){this.state("nosr");return}
+  if(!this.SR&&!(window.Ear&&Ear.ok())){this.state("nosr");return}
   this.on=true;this.listen();
  },
+ fallback:function(){this.state("earfail");this.listen()},
  unlock:function(){
   var me=this;
   try{var AC=window.AudioContext||window.webkitAudioContext;if(AC&&!me.ctx)me.ctx=new AC();if(me.ctx&&me.ctx.resume)me.ctx.resume()}catch(e){}
@@ -15,10 +16,12 @@ var Voice={
  },
  plain:function(t){return t.replace(/\[(giggles?|chuckles)\]/gi,"hehe, ").replace(/\[(laughs[^\]]*|starts laughing)\]/gi,"haha, ").replace(/\[(sighs|exhales)\]/gi,"hmm, ").replace(/\[gasps?\]/gi,"oh! ").replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim()},
  fix:function(t){return t.replace(/\b(jey|hay|hei)\b/gi,"hey").replace(/\b(veronika|varonica|veronic|weronica|beronica)\b/gi,"Veronica")},
- rate:function(m){return({mad:1.12,excited:1.1,surprised:1.1,nervous:1.08,playful:1.06,jealous:1.05,annoyed:1.05,hopeful:.98,grateful:.96,love:.94,embarrassed:.93,shy:.92,guilty:.92,sad:.9,hurt:.9,lonely:.9,cozy:.9,bored:.88,sleepy:.86,worried:.95})[m]||1},
+ rate:function(m){return({mad:1.12,excited:1.1,surprised:1.1,nervous:1.08,playful:1.06,jealous:1.05,annoyed:1.05,hopeful:.98,grateful:.96,love:.94,embarrassed:.93,shy:.92,guilty:.92,sad:.9,hurt:.9,lonely:.9,cozy:.9,bored:.88,sleepy:.86,worried:.95,caring:.94,tender:.92,protective:1,admiring:1.04,determined:1.04,relieved:.96,disappointed:.9,amused:1.06,insecure:.92,content:.94})[m]||1},
  listen:function(){
   var me=this;
-  if(!me.on||me.muted||me.speaking||me.rec||!me.SR)return;
+  if(!me.on||me.muted||me.speaking)return;
+  if(window.Ear&&Ear.ok()){if(me.rec){var r0=me.rec;me.rec=null;try{r0.onend=null;r0.abort()}catch(e){}}Ear.start();return}
+  if(me.rec||!me.SR)return;
   var r=new me.SR();me.rec=r;r.lang=me.lang;r.continuous=true;r.interimResults=false;r.maxAlternatives=3;
   r.onstart=function(){me.state("listening")};
   r.onresult=function(e){var res=e.results[e.results.length-1];if(res.isFinal){var b=res[0];for(var k=1;k<res.length;k++)if(res[k].confidence>b.confidence)b=res[k];var t=b.transcript.trim();if(t&&me.onText)me.onText(t)}};
@@ -26,7 +29,7 @@ var Voice={
   r.onend=function(){me.rec=null;if(me.on&&!me.muted&&!me.speaking)setTimeout(function(){me.listen()},350)};
   try{r.start()}catch(e){me.rec=null}
  },
- stop:function(){if(this.rec){var r=this.rec;this.rec=null;try{r.onend=null;r.abort()}catch(e){}}},
+ stop:function(){if(window.Ear){Ear.on=false;Ear.reset()}if(this.rec){var r=this.rec;this.rec=null;try{r.onend=null;r.abort()}catch(e){}}},
  setMuted:function(m){this.muted=m;if(m){this.stop();this.state("muted")}else this.listen()},
  interrupt:function(){var me=this;try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}if(me.src){var s=me.src;me.src=null;try{s.onended=null;s.stop()}catch(e){}}if(me.speaking)me.finish()},
  elKeys:function(){return(S.get("v_el")||"").split(/\s+/).filter(function(k){return k.length>15})},

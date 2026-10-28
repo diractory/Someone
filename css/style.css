@@ -150,3 +150,30 @@ body.gaming #stage{flex:0 0 30%}
 pre{position:relative;margin:8px 0;padding:34px 12px 12px;border-radius:12px;background:#0b1020;border:1px solid var(--line);overflow-x:auto;font-size:12.5px;line-height:1.5;max-width:100%}
 pre code{font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre}
 .cp{position:absolute;top:6px;right:6px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:12px;padding:4px 10px}
+
+.tr{display:flex;gap:8px}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:4px 14px;scrollbar-width:none}
+.chp{flex:none;padding:8px 14px;border-radius:18px;background:var(--card2);border:1px solid var(--line);font-size:13px;white-space:nowrap}
+body.gaming #chips{display:none}
+@keyframes fade{to{opacity:0}}
+body.vm:not(.gaming) #stage{flex:1;border-radius:0}
+body.vm:not(.gaming) #stage:after{height:240px;background:linear-gradient(transparent,rgba(10,13,22,.9))}
+body.vm:not(.gaming) #status{position:fixed;left:0;right:0;bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:4;padding:0;min-height:0;pointer-events:none;text-shadow:0 1px 8px #000}
+body.vm:not(.gaming) #log{position:fixed;left:0;right:0;bottom:calc(166px + env(safe-area-inset-bottom,0px));max-height:34vh;z-index:4;overflow:hidden;justify-content:flex-end;pointer-events:none;padding:0 14px}
+body.vm:not(.gaming) .m:not(:nth-last-child(-n+2)){display:none}
+body.vm:not(.gaming) .m{background:rgba(10,13,22,.62);backdrop-filter:blur(10px);font-size:16px;animation:in .25s ease-out,fade 1.2s ease 16s forwards}
+body.vm:not(.gaming) #chips{position:fixed;left:0;right:0;bottom:calc(98px + env(safe-area-inset-bottom,0px));z-index:4}
+body.vm:not(.gaming) #bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(transparent,rgba(10,13,22,.92) 40%)}
+body:not(.vm) #stage{box-shadow:0 10px calc(30px + var(--lv,0)*50px) -12px color-mix(in srgb,var(--pk) 60%,transparent),inset 0 0 70px color-mix(in srgb,var(--pk) 24%,transparent)}
+
+#tasks{position:fixed;inset:0;z-index:9;display:none;background:rgba(6,8,16,.92);backdrop-filter:blur(8px);overflow-y:auto}
+.addrow{display:grid;gap:8px;margin-top:12px}
+.addrow input,.addrow select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:15px}
+.tk{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;margin:8px 0;background:var(--card)}
+.tk span{flex:1;line-height:1.35}
+.tk input{width:22px;height:22px;flex:none}
+.tk.done span{text-decoration:line-through;opacity:.5}
+.tk .due{font-size:12px;color:var(--mut)}
+.tk.soon .due{color:#ffb84a}
+.tk.over .due{color:#ff6b6b}
+.del{border:0;background:none;color:var(--mut);font-size:16px;padding:6px}

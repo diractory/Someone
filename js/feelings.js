@@ -22,9 +22,9 @@ var Feel={
  react:function(m){
   var me=this;
   if(/^(jealous|pout|mad|annoyed)$/.test(m))me.set("jel",Math.max(me.s.jel,35));
-  else if(/^(love|shy|grateful|embarrassed|cozy)$/.test(m))me.add("love",2);
-  else if(/^(happy|laugh|excited|playful|hopeful|proud)$/.test(m))me.add("joy",3);
-  else if(/^(sad|hurt|lonely|guilty|worried)$/.test(m))me.add("joy",-3);
+  else if(/^(love|shy|grateful|embarrassed|cozy|caring|tender|admiring)$/.test(m))me.add("love",2);
+  else if(/^(happy|laugh|excited|playful|hopeful|proud|amused|content|relieved|determined)$/.test(m))me.add("joy",3);
+  else if(/^(sad|hurt|lonely|guilty|worried|disappointed|insecure)$/.test(m))me.add("joy",-3);
   if(/^(love|shy|happy|grateful)$/.test(m))me.add("jel",-6);
  },
  onGame:function(out){if(out==="ai")this.add("joy",6);else if(out==="you")this.add("joy",-5)},

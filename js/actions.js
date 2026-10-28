@@ -1,5 +1,5 @@
 var Actions={
- apps:{whatsapp:"com.whatsapp",instagram:"com.instagram.android",youtube:"com.google.android.youtube",spotify:"com.spotify.music",telegram:"org.telegram.messenger",gmail:"com.google.android.gm",maps:"com.google.android.apps.maps",chrome:"com.android.chrome",snapchat:"com.snapchat.android",facebook:"com.facebook.katana"},
+ apps:{whatsapp:"whatsapp://send",instagram:"instagram://app",youtube:"vnd.youtube://",spotify:"spotify:",telegram:"tg://",gmail:"mailto:",maps:"geo:0,0?q=",snapchat:"snapchat://",facebook:"fb://feed"},
  alias:{"whats app":"whatsapp","insta":"instagram","you tube":"youtube","google maps":"maps","map":"maps","gmail":"gmail","mail":"gmail"},
  contacts:function(){
   var o={};(S.get("v_contacts")||"").split("\n").forEach(function(l){var p=l.split("=");if(p.length>1){var n=p[0].trim().toLowerCase(),v=p.slice(1).join("=").replace(/[^\d+]/g,"");if(/^\d{10}$/.test(v))v="+91"+v;if(n&&v)o[n]=v}});return o;
@@ -27,7 +27,7 @@ var Actions={
   for(var i=0;i<names.length;i++){
    if(s.indexOf(names[i])>-1){
     var key=this.alias[names[i]]||names[i],nice=key.charAt(0).toUpperCase()+key.slice(1);
-    return{label:"Open "+nice,url:"intent://#Intent;package="+this.apps[key]+";end",say:"Sure. Tap the button and I’ll open "+nice+" for you."};
+    return{label:"Open "+nice,url:this.apps[key],say:"Sure. Tap the button and I’ll open "+nice+" for you."};
    }
   }
   return null;
