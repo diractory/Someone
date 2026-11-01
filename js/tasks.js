@@ -68,7 +68,7 @@ var Tasks={
  },
  tick:function(){
   var me=this,now=Date.now(),td=me.iso(new Date()),tm=me.iso(new Date(now+864e5)),h=new Date().getHours(),line=null,mood="caring",care;
-  if(S.get("v_nudge")==="0"||busy||Voice.speaking||document.visibilityState!=="visible"||document.body.classList.contains("gaming"))return;
+  if(S.get("v_nudge")==="0"||busy||(window.Music&&Music.holding())||Voice.speaking||document.visibilityState!=="visible"||document.body.classList.contains("gaming"))return;
   if(now-lastAct<120000||now-me.lastSay<20*60000)return;
   var P=me.list.filter(function(x){return x.k==="task"&&!x.done&&x.due&&x.due<=tm&&now-(x.rem||0)>3*3600000}).sort(function(a,b){return a.due>b.due?1:-1});
   if(P.length){

@@ -19,7 +19,7 @@ var Voice={
  rate:function(m){return({mad:1.12,excited:1.1,surprised:1.1,nervous:1.08,playful:1.06,jealous:1.05,annoyed:1.05,hopeful:.98,grateful:.96,love:.94,embarrassed:.93,shy:.92,guilty:.92,sad:.9,hurt:.9,lonely:.9,cozy:.9,bored:.88,sleepy:.86,worried:.95,caring:.94,tender:.92,protective:1,admiring:1.04,determined:1.04,relieved:.96,disappointed:.9,amused:1.06,insecure:.92,content:.94})[m]||1},
  listen:function(){
   var me=this;
-  if(!me.on||me.muted||me.speaking)return;
+  if(!me.on||me.muted||me.speaking||(window.Music&&Music.holding()))return;
   if(window.Ear&&Ear.ok()){if(me.rec){var r0=me.rec;me.rec=null;try{r0.onend=null;r0.abort()}catch(e){}}Ear.start();return}
   if(me.rec||!me.SR)return;
   var r=new me.SR();me.rec=r;r.lang=me.lang;r.continuous=true;r.interimResults=false;r.maxAlternatives=3;
@@ -34,7 +34,7 @@ var Voice={
  interrupt:function(){var me=this;try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}if(me.src){var s=me.src;me.src=null;try{s.onended=null;s.stop()}catch(e){}}if(me.speaking)me.finish()},
  elKeys:function(){return(S.get("v_el")||"").split(/\s+/).filter(function(k){return k.length>15})},
  elIdx:0,elCool:{},
- finish:function(){var me=this;clearInterval(me.iv);me.src=null;me.speaking=false;me.level=null;me.state("idle");setTimeout(function(){me.listen()},400)},
+ finish:function(){var me=this;clearInterval(me.iv);me.src=null;if(window.Music)Music.duck(false);me.speaking=false;me.level=null;me.state("idle");if(window.Music&&Music.afterSpeech())return;setTimeout(function(){me.listen()},400)},
  pick:function(t){
   var vs=speechSynthesis.getVoices()||[],L=/[\u0900-\u097F]/.test(t)?/^hi/i:/^en/i;
   var sv=S.get("v_voice");if(sv){var fv=vs.find(function(v){return v.name===sv});if(fv)return fv}
@@ -68,7 +68,7 @@ var Voice={
  speak:async function(text,mood){
   var me=this,ks=me.elKeys();
   if(!me.unlocked){me.pending=[text,mood];me.state("needtap");return}
-  me.stop();me.speaking=true;me.state("speaking");
+  me.stop();me.speaking=true;me.state("speaking");if(window.Music)Music.duck(true);
   for(var i=0;i<ks.length;i++){
    var k=ks[(me.elIdx+i)%ks.length];if((me.elCool[k]||0)>Date.now())continue;
    try{await me.eleven(text,k,mood);me.elIdx=(me.elIdx+i)%ks.length;return}

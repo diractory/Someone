@@ -17,6 +17,10 @@ var Games={
  pick:function(a){return a[Math.floor(Math.random()*a.length)]},
  match:function(t){
   var s=t.toLowerCase(),v=/\b(play|let.?s|khel|khelo|wanna|chalo|start)\b/.test(s);
+  if(/memory (match|game)/.test(s))return"mm";
+  if(/hang ?man/.test(s))return"hang";
+  if(/word chain/.test(s))return"wc";
+  if(/story (together|game)/.test(s))return"sg";
   if(/\bquiz me\b|pharm\w* quiz/.test(s))return"pq";
   if(!v)return null;
   if(/\bchess\b/.test(s))return"chess";
@@ -35,6 +39,8 @@ var Games={
   if(g==="tod"){this.close();ask("Let’s play truth or dare! Start by giving me one, then we take turns. Keep it fun and sweet.");return}
   if(g==="wyr"){this.close();ask("Let’s play Would You Rather! Ask me a fun one first, then we take turns.");return}
   if(g==="q20"){this.close();ask("Let’s play 20 questions. I’ll think of something and you guess by asking yes or no questions. Wait, you think of something instead and I’ll guess by asking yes or no questions. Ready, I’ll start!");return}
+  if(g==="wc"){this.close();ask("Let’s play word chain with pharmacy and everyday words: I say a word, you say one that starts with my last letter, and we keep going. You start.");return}
+  if(g==="sg"){this.close();ask("Let’s build a story together, one or two sentences each. You start, and make it a sweet one.");return}
   if(g==="pq"){this.close();ask("Quiz me on B.Pharm subjects, one question at a time. Start with a pharmacology question, wait for my answer, then tell me if I’m right and explain briefly. Mix subjects as we go.");return}
   if(g==="riddle"){this.close();ask("Give me a fun riddle to solve, and tell me if I’m right or wrong after I answer.");return}
   if(!g||g==="menu")this.menu();else{this.say("Ooh, you’re on! Let’s play.","excited");this.start(g)}
@@ -49,13 +55,13 @@ var Games={
   var me=this,st=me.st;
   me.cur=null;me.onGive=null;$("gtitle").textContent="Games";$("gctl").innerHTML="";
   $("gmsg").textContent="You "+st.l+" · Veronica "+st.w+" · Draws "+st.d;
-  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="pq">💊 Pharmacy Quiz</button><button class="gbtn" data-g="riddle">🧩 Riddles</button><button class="gbtn" data-g="wyr">🤔 Would You Rather</button><button class="gbtn" data-g="q20">❓ 20 Questions</button></div>';
+  $("gb").innerHTML='<div class="menu"><button class="gbtn" data-g="chess">♚︎ Chess</button><button class="gbtn" data-g="ttt">❌ Tic-Tac-Toe</button><button class="gbtn" data-g="c4">🔴 Connect Four</button><button class="gbtn" data-g="rps">✊ Rock Paper Scissors</button><button class="gbtn" data-g="tod">🎭 Truth or Dare</button><button class="gbtn" data-g="mm">🧠 Memory Match</button><button class="gbtn" data-g="hang">💊 Pharmacy Hangman</button><button class="gbtn" data-g="wc">🔤 Word Chain</button><button class="gbtn" data-g="sg">📖 Story Together</button><button class="gbtn" data-g="pq">💊 Pharmacy Quiz</button><button class="gbtn" data-g="riddle">🧩 Riddles</button><button class="gbtn" data-g="wyr">🤔 Would You Rather</button><button class="gbtn" data-g="q20">❓ 20 Questions</button></div>';
   $("gb").onclick=function(e){var g=e.target.dataset&&e.target.dataset.g;if(g)me.open(g)};
  },
  start:function(g){
   this.cur=g;this.onGive=null;
   $("gctl").innerHTML='<button class="gbtn" data-a="give">Give up</button><button class="gbtn" data-a="menu">Menu</button>';
-  if(g==="chess")this.chess();else if(g==="ttt")this.ttt();else if(g==="c4")this.c4();else if(g==="rps")this.rps();
+  if(g==="chess")this.chess();else if(g==="ttt")this.ttt();else if(g==="c4")this.c4();else if(g==="rps")this.rps();else if(g==="mm")this.mm();else if(g==="hang")this.hang();
   this.fit();
  },
  finish:function(out){
@@ -71,6 +77,56 @@ var Games={
   this.save();$("gmsg").textContent=line.replace(/\[[^\]]*\]/g,"").trim();
   this.say(line,m);
   $("gctl").innerHTML='<button class="gbtn" data-a="again">Play again</button><button class="gbtn" data-a="menu">Menu</button>';
+ },
+ solo:function(win,extra){
+  var line,m;
+  if(win){m=this.pick(["admiring","excited","proud"]);line=this.pick(["[giggles] You did it! I knew you could.","[laughs softly] Look at you, so clever! I’m proud of you."])+(extra?" "+extra:"");if(window.Feel)Feel.add("joy",3)}
+  else{m="tender";line="[sighs] Aww, so close. Want to try again? I’ll cheer louder this time."}
+  $("gmsg").textContent=line.replace(/\[[^\]]*\]/g,"").trim();this.say(line,m);
+  $("gctl").innerHTML='<button class="gbtn" data-a="again">Play again</button><button class="gbtn" data-a="menu">Menu</button>';
+ },
+ mm:function(){
+  var me=this,E=["🌸","🍓","🎧","🌙","⭐","🦋","🍫","🎀"],cards=E.concat(E).map(function(e){return{e:e,done:false}}).sort(function(){return Math.random()-.5}),open=[],found=0,moves=0,lock=false;
+  $("gtitle").textContent="Memory Match";$("gmsg").textContent="Find all the pairs";
+  function render(){
+   var h='<div class="bd mmg">';
+   cards.forEach(function(c,i){var up=c.done||open.indexOf(i)>-1;h+='<div class="mc'+(up?" up":"")+'" data-i="'+i+'">'+(up?c.e:"")+"</div>"});
+   $("gb").innerHTML=h+"</div>";
+  }
+  $("gb").onclick=function(e){
+   var i=e.target.dataset&&e.target.dataset.i;if(i===undefined||lock||me.cur!=="mm")return;i=+i;
+   if(cards[i].done||open.indexOf(i)>-1)return;
+   open.push(i);render();
+   if(open.length===2){
+    moves++;lock=true;$("gmsg").textContent="Moves: "+moves;
+    setTimeout(function(){
+     var a=open[0],b=open[1];
+     if(cards[a].e===cards[b].e){cards[a].done=cards[b].done=true;found++;if(found===8){open=[];render();me.solo(true,"Only "+moves+" moves!");return}me.chat(me.pick(["[giggles] A match!","Ooh, nice one!"]),"happy")}
+     open=[];lock=false;render();
+    },700);
+   }
+  };
+  me.onGive=function(){me.menu()};
+  render();
+ },
+ hang:function(){
+  var me=this,W=["paracetamol","aspirin","insulin","amoxicillin","metformin","atenolol","omeprazole","pharmacology","excipient","bioavailability","suspension","ointment","antibiotic","analgesic","antacid","diuretic","vaccine","capsule","dissolution","pharmacopoeia"],w=me.pick(W),tried={},wrong=0,over=false;
+  $("gtitle").textContent="Pharmacy Hangman";
+  function render(){
+   var disp=w.split("").map(function(c){return tried[c]?c:"_"}).join(" "),k="abcdefghijklmnopqrstuvwxyz".split("").map(function(c){return'<button class="gbtn kb" data-k="'+c+'"'+(tried[c]||over?" disabled":"")+">"+c+"</button>"}).join("");
+   $("gb").innerHTML='<div class="hm"><div class="hw">'+disp+'</div><div class="hl">'+"❤️".repeat(6-wrong)+"🖤".repeat(wrong)+'</div><div class="kbw">'+k+"</div></div>";
+  }
+  $("gmsg").textContent="Guess the pharmacy word";
+  $("gb").onclick=function(e){
+   var c=e.target.dataset&&e.target.dataset.k;if(!c||over||tried[c]||me.cur!=="hang")return;
+   tried[c]=1;if(w.indexOf(c)<0)wrong++;
+   var won=w.split("").every(function(x){return tried[x]});
+   if(won){over=true;render();me.finish("you");return}
+   if(wrong>=6){over=true;tried=w.split("").reduce(function(o,x){o[x]=1;return o},tried);render();$("gmsg").textContent="It was “"+w+"”";me.finish("ai");return}
+   render();
+  };
+  me.onGive=function(){if(!over){over=true;me.finish("ai")}};
+  render();
  },
  chess:function(){
   var me=this,s=CH.init(),sel=-1,tg=[],over=false,thinking=false,gb=$("gb");

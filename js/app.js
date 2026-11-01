@@ -27,7 +27,7 @@ var lastAct=Date.now(),lastNudge=0;
 function save(){S.set("v_hist",JSON.stringify(hist.slice(-30)));S.set("v_notes",JSON.stringify(notes.slice(-100)));S.set("v_diary",JSON.stringify(diary.slice(-40)))}
 
 Voice.onState=function(s){
- var m={listening:"Listening… just talk",speaking:"Veronica is talking…",muted:"Mic is muted",idle:"Listening…",blocked:"Mic is blocked. Allow the mic for this page, then reload.",nosr:"Voice input isn’t supported in this browser. Type instead.",elfail:"Sweet voice unavailable (key or credits). Using the phone voice.",thinking:"Understanding you…",earfail:"Tone hearing isn’t working here, so I switched to normal listening.",needtap:"Tap anywhere once so I can talk to you"};
+ var m={listening:"Listening… just talk",speaking:"Veronica is talking…",muted:"Mic is muted",idle:"Listening…",blocked:"Mic is blocked. Allow the mic for this page, then reload.",nosr:"Voice input isn’t supported in this browser. Type instead.",music:"Music playing · tap the mic to talk",elfail:"Sweet voice unavailable (key or credits). Using the phone voice.",thinking:"Understanding you…",earfail:"Tone hearing isn’t working here, so I switched to normal listening.",needtap:"Tap anywhere once so I can talk to you"};
  if(!busy||s==="speaking"||s==="elfail"||s==="needtap"||s==="thinking"||s==="earfail")status(m[s]||"");
  $("mute").classList.toggle("on",s==="listening"||s==="idle");
  if(s==="speaking")Face.startSpeakFx(Face.cur);else Face.stopSpeakFx();
@@ -48,9 +48,10 @@ async function ask(text,tone){
  if(Extras.isCrying(text))Face.mood("sad");
  var gm=Games.match(text);
  if(gm){Games.open(gm);busy=false;return}
- var act=(await Phone.handle(text))||Actions.match(text);
+ var wsq=Extras.isWeb(text)&&Brain.keys().some(function(k){return detect(k)==="gemini"});
+ var act=Music.match(text)||(await Phone.handle(text))||(wsq?null:Actions.match(text));
  if(act){
-  hist.push({r:"v",t:act.say});add("v",act.say);if(act.url)addAction(act);save();var am=act.mood||"happy";Face.mood(am);busy=false;Voice.speak(act.say,am);return;
+  hist.push({r:"v",t:act.say});add("v",act.say);if(act.url)addAction(act);save();var am=act.mood||"happy";Face.mood(am);busy=false;Voice.speak(act.say,am);if(act.run)act.run();return;
  }
  var loc=Extras.local(text);
  if(loc){var ls=loc.say.replace(/\[[^\]]*\]/g,"").trim();hist.push({r:"v",t:ls});add("v",ls);save();Face.mood(loc.mood);busy=false;Voice.speak(loc.say,loc.mood);loc.run();return}
@@ -61,7 +62,7 @@ async function ask(text,tone){
  var tp=add("v","");tp.textContent="…";tp.classList.add("typing");lastAct=Date.now();
  var out="";
  try{
-  out=await Brain.ask(hist,CFG.persona+wx+wk+hint+timeHint()+Feel.hint()+toneHint(ut)+Tasks.hint()+(SUM?" Summary of your earlier conversations with the user: "+SUM:"")+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain[wsq?"askWeb":"ask"](hist,CFG.persona+wx+wk+hint+timeHint()+Feel.hint()+toneHint(ut)+Tasks.hint()+Music.hint()+relHint()+(SUM?" Summary of your earlier conversations with the user: "+SUM:"")+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
   tp.remove();hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
@@ -71,27 +72,31 @@ async function ask(text,tone){
  var nm=out.match(/\[name:([^\]]{1,30})\]/i);if(nm){NAME=nm[1].trim();S.set("v_name",NAME)}
  var fm=out.match(/\[feel:([^\]]{1,20})\]/i);
  if(fm){var fl=fm[1].trim().toLowerCase();if(!/^(neutral|calm|none)$/.test(fl)){diary.push({d:new Date().toISOString().slice(0,10),f:fl,t:text.slice(0,60)});if(/sad|cry|lonely|anxious|stress|hurt|depress|grief|scared|upset/.test(fl)&&!/^(sad|worried)$/.test(mood))mood="sad"}}
+ var pm=out.match(/\[play:([^\]]{1,80})\]/i);
+ if(pm){var sg=Music.find(pm[1]);if(sg){if(Music.kind(sg.u)==="audio")Music.queue=sg;else addAction({label:"Play “"+sg.t+"”",url:sg.u})}}
+ if(/\[stop-music\]/i.test(out))Music.stop();
  var tr=/\[task:([^\]|]{1,100})(?:\|([^\]]{1,24}))?\]/gi,tm2;while((tm2=tr.exec(out)))Tasks.add("task",tm2[1].trim(),tm2[2]?Tasks.parseDue(tm2[2])[0]:"");
  var rr=/\[routine:([^\]]{1,100})\]/gi,rm2;while((rm2=rr.exec(out)))Tasks.add("routine",rm2[1].trim(),"");
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
- var clean=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|caring|protective|admiring|determined|relieved|disappointed|amused|tender|insecure|content|calm)\]/gi,"").replace(/\[(name|remember|feel|task|routine):[^\]]*\]/gi,""),sr=Extras.splitReply(clean),tail=sr.tail;
+ var clean=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|caring|protective|admiring|determined|relieved|disappointed|amused|tender|insecure|content|calm)\]/gi,"").replace(/\[(name|remember|feel|task|routine|play):[^\]]*\]|\[stop-music\]/gi,""),sr=Extras.splitReply(clean),tail=sr.tail;
  var spoken=sr.head.replace(/\s+/g," ").trim()||(tail?"Here you go.":"");
  out=spoken.replace(/\[([^\]]{2,24})\]/g,"*$1*").trim()||"Hmm?";
  tp.remove();Face.mood(mood);Feel.react(mood);
  var bub=add("v",out);if(tail){richTail(bub,tail);setMode("chat")}
+ if(wsq&&Brain.links&&Brain.links.length){addLinks(Brain.links,text);setMode("chat")}
  hist.push({r:"v",t:tail?out+"\n---\n"+tail.slice(0,3000):out});save();busy=false;
  Voice.speak(spoken||out,mood);maybeSummarize();
 }
 Voice.onText=function(t,r){lastAct=Date.now();ask(Voice.fix(t),r)};
 
 $("wakebtn").onclick=function(){$("wake").style.display="none";Voice.unlock();Voice.start();keepAwake();if(!Brain.keys().length){status("Open ⚙ and add a free key");$("set").style.display="block"}};
-$("mute").onclick=function(){if(Voice.speaking){Voice.interrupt();return}if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
+$("mute").onclick=function(){if(Voice.speaking){Voice.interrupt();return}if(window.Music&&Music.holding()){Music.talk();return}if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
 $("send").onclick=function(){var v=$("txt").value;$("txt").value="";ask(v)};
 $("txt").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("send").onclick()}});
-$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";keyInfo();$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";$("contacts").value=S.get("v_contacts")||"";fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
+$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";keyInfo();$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";$("contacts").value=S.get("v_contacts")||"";$("mlib").value=S.get("v_music")===null?Music.DEFAULT:S.get("v_music");$("rel").value=S.get("v_rel")||"all";$("pref").checked=S.get("v_pref")!=="0";memRender();fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
 $("done").onclick=function(){
  S.set("v_keys",$("keys").value);NAME=$("nm").value.trim();S.set("v_name",NAME);
- Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_contacts",$("contacts").value);S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
+ Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_contacts",$("contacts").value);S.set("v_music",$("mlib").value);S.set("v_rel",$("rel").value);S.set("v_pref",$("pref").checked?"1":"0");Music.load();Music.render();S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
  Voice.warned=false;Brain.cool={};$("set").style.display="none";if(Voice.on){Voice.stop();Voice.listen()}
 };
 $("clr").onclick=function(){hist=[];notes=[];diary=[];SUM="";S.set("v_sum","");save();$("log").innerHTML="";add("v","Fresh start. Hi again!")};
@@ -139,7 +144,7 @@ var _ld=diary[diary.length-1];if(_ld&&Date.now()-Date.parse(_ld.d)<14*864e5)add(
 
 setInterval(function(){
  var now=Date.now();
- if(S.get("v_nudge")==="0"||busy||!Voice.on||Voice.muted||Voice.speaking||document.visibilityState!=="visible"||document.body.classList.contains("gaming"))return;
+ if(S.get("v_nudge")==="0"||busy||(window.Music&&Music.holding())||!Voice.on||Voice.muted||Voice.speaking||document.visibilityState!=="visible"||document.body.classList.contains("gaming"))return;
  if(now-lastAct<5*60e3||now-lastNudge<15*60e3)return;
  lastNudge=now;lastAct=now;
  var L=[["curious","Hey… you’ve gone quiet. Everything okay?"],["shy","[whispers] I’m still here, you know."],["happy","Want to play a little game while you take a break?"],["curious","Have you had some water lately? Just checking on you."]],p=L[Math.floor(Math.random()*L.length)];
@@ -191,7 +196,7 @@ function setMode(m){document.body.classList.toggle("vm",m!=="chat");S.set("v_mod
 setMode(S.get("v_mode")||"voice");
 $("modebtn").onclick=function(){setMode(document.body.classList.contains("vm")?"chat":"voice")};
 (function(){
- var C=[["Roast me 😈","Roast me, playfully!"],["Quiz me 💊","Quiz me on pharmacology"],["Cheer me up 🌈","Cheer me up, I need it"],["Study plan 📚","Help me make a study plan for today"],["Code help 💻","I need help with coding. Ask me what I’m building."],["Story 🌙","Tell me a short sweet story"],["Games 🎮",""]];
+ var C=[["Play a song 🎵","Play a song that fits my mood"],["Roast me 😈","Roast me, playfully!"],["Quiz me 💊","Quiz me on pharmacology"],["Cheer me up 🌈","Cheer me up, I need it"],["Study plan 📚","Help me make a study plan for today"],["Code help 💻","I need help with coding. Ask me what I’m building."],["Story 🌙","Tell me a short sweet story"],["Games 🎮",""]];
  C.forEach(function(c){var b=document.createElement("button");b.className="chp";b.textContent=c[0];b.onclick=function(){if(c[1])ask(c[1]);else Games.open("menu")};$("chips").appendChild(b)});
 })();
 
@@ -206,3 +211,27 @@ $("keys").addEventListener("input",keyInfo);
  if(U.length){Face.mood(U.some(function(x){return x.due<td})?"worried":"caring");add("v","Hey love, you have "+U.length+" thing"+(U.length>1?"s":"")+" due soon: "+U.slice(0,3).map(function(x){return x.t+" ("+Tasks.when(x.due)+")"}).join(", ")+".",true)}
  setInterval(function(){Tasks.tick()},60000);
 })();
+
+function relHint(){
+ var r=S.get("v_rel")||"all",m={all:" The user wants you to be everything to them: best friend, sweetheart and creator.",friend:" Relate to the user as a best friend (warm, no romance).",partner:" Relate to the user as their sweetheart and partner.",creator:" Relate to the user as the person who created you and a very close friend."};
+ return m[r]||m.all;
+}
+function addLinks(list,q){
+ var el=add("v","");el.textContent="";el.classList.add("rich");
+ var w=document.createElement("div");w.className="tail";
+ list.forEach(function(l){var a=document.createElement("a");a.className="btn g";a.href=l.uri;a.target="_blank";a.rel="noopener";a.textContent=l.title;w.appendChild(a)});
+ var g=document.createElement("a");g.className="btn g";g.href="https://www.google.com/search?q="+encodeURIComponent(q);g.target="_blank";g.rel="noopener";g.textContent="More on Google";w.appendChild(g);
+ el.appendChild(w);$("log").scrollTop=1e9;
+}
+function memRender(){
+ var L=$("memlist");L.innerHTML="";
+ if(SUM){var p=document.createElement("p");p.className="note";p.textContent="Summary: "+SUM;L.appendChild(p)}
+ notes.slice(-40).forEach(function(n){
+  var row=document.createElement("div"),sp=document.createElement("span"),d=document.createElement("button");
+  row.className="tk";sp.textContent=n;d.className="del";d.textContent="✕";d.setAttribute("aria-label","Forget this");
+  d.onclick=function(){var i=notes.lastIndexOf(n);if(i>-1)notes.splice(i,1);save();memRender()};
+  row.appendChild(sp);row.appendChild(d);L.appendChild(row);
+ });
+ if(!L.children.length)L.innerHTML='<p class="note">Nothing yet. She learns as you talk.</p>';
+}
+$("memclear").onclick=function(){SUM="";S.set("v_sum","");memRender()};

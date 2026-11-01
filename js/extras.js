@@ -33,6 +33,7 @@ var Extras={
   }catch(e){return" The Wikipedia lookup failed; say so honestly."}
  },
  userTone:function(t){var l=/\b(ha ?ha+|ha(ha)+|he ?he+|hihi|lol|lmao|rofl)\b|😂|🤣/i.test(t),a=/\b(angry|gussa|furious|annoyed|irritated|pissed|i hate|so mad)\b/i.test(t);return{tone:l?"laughing":a?"angry":"neutral",laugh:l}},
+ isWeb:function(t){return/^(?:search|google|find|web search|search the web for|search online for)\s+\S+/i.test(t.trim())||/\b(latest news|news about|news on|what.?s happening|who won|score of|price of|weather in|search the web|search online)\b/i.test(t)},
  isSleep:function(t){return/good\s?night|going to sleep|go to sleep|sleep now|sone ja|so ja\b|neend aa/i.test(t)},
  weather:async function(){
   var me=this;
