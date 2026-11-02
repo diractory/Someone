@@ -54,11 +54,12 @@
 <div id="wake"><div><div class="orb">💗</div><h1>Veronica</h1><p>Your companion, assistant and best friend.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed per visit because your browser blocks the mic until you do. After that she listens by herself.</p></div></div>
 
 <div id="tasks"><div class="sheet">
-<div class="shead"><h2>Tasks &amp; routine</h2><button class="ic" id="tkx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div class="shead"><h2>Tasks, routine &amp; wishes</h2><button class="ic" id="tkx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <p class="note">Say “add homework pharmacology assignment due tomorrow”, or add one here. She reminds you while the app is open.</p>
 <div class="addrow"><input id="tkt" type="text" placeholder="What do you need to do?" autocomplete="off"><select id="tkk"><option value="task">Task / homework</option><option value="routine">Daily routine</option></select><input id="tkd" type="date"><button class="btn" id="tka">Add</button></div>
 <h3>Homework &amp; tasks</h3><div id="tklist"></div>
 <h3>Daily routine</h3><div id="tkroutine"></div>
+<h3>Her wishes 💫</h3><div id="tkwish"></div>
 </div></div>
 
 <div id="set"><div class="sheet">
@@ -83,6 +84,10 @@
 <label for="vpitch">Pitch (higher = cuter)</label>
 <input id="vpitch" type="range" min="0.9" max="1.8" step="0.05">
 <button class="btn g" id="vtest">Hear this voice</button>
+
+<h3>Your own commands</h3>
+<label for="cmds">One per line: what you say => what she does. Actions: say: …, open: link, play: song title, call: contact. Join several with ;</label>
+<textarea id="cmds" rows="4" autocomplete="off" spellcheck="false" placeholder="good morning => say: Good morning, love! Eat breakfast.&#10;study mode => say: Focus time!; open: https://www.youtube.com/results?search_query=lofi+study"></textarea>
 
 <h3>Music library</h3>
 <label for="mlib">One song per line: Title | mood | link. Use an mp3 link (plays inside the app), or a Spotify or YouTube link (opens in that app).</label>
@@ -127,6 +132,7 @@
 <script src="js/feelings.js"></script>
 <script src="js/tasks.js"></script>
 <script src="js/music.js"></script>
+<script src="js/cmds.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

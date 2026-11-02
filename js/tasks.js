@@ -62,9 +62,16 @@ var Tasks={
   return null;
  },
  hint:function(){
-  var me=this,P=me.list.filter(function(x){return x.k==="task"&&!x.done}).slice(0,10).map(function(x){return x.t+(x.due?" (due "+me.when(x.due)+")":"")}),R=me.list.filter(function(x){return x.k==="routine"}).slice(0,10).map(function(x){return x.t});
-  if(!P.length&&!R.length)return"";
-  return" Today is "+me.iso(new Date())+". The user’s pending homework and tasks: "+(P.join("; ")||"none")+". Their regular routine: "+(R.join("; ")||"not shared yet")+". Care for them like a loving girlfriend with a gentle, motherly side: remind about homework, meals, water and sleep when it fits, encourage without nagging in every message, and celebrate when they finish things.";
+  var me=this,P=me.list.filter(function(x){return x.k==="task"&&!x.done}).slice(0,10).map(function(x){return x.t+(x.due?" (due "+me.when(x.due)+")":"")}),R=me.list.filter(function(x){return x.k==="routine"}).slice(0,10).map(function(x){return x.t}),W=me.list.filter(function(x){return x.k==="wish"&&!x.done}).slice(0,4).map(function(x){return x.t}),o="";
+  if(P.length||R.length)o=" Today is "+me.iso(new Date())+". The user’s pending homework and tasks: "+(P.join("; ")||"none")+". Their regular routine: "+(R.join("; ")||"not shared yet")+". Care for them like a loving girlfriend with a gentle, motherly side: remind about homework, meals, water and sleep when it fits, encourage without nagging in every message, and celebrate when they finish things.";
+  if(W.length)o+=" Your own little wishes (mention one only now and then, lightly, never as pressure or guilt): "+W.join("; ")+".";
+  return o;
+ },
+ ACT:{talk:function(){ask("Ask me about my day and really listen.")},music:function(){ask("Play a song we can listen to together")},game:function(){Games.open("menu")},story:function(){ask("Tell me a short sweet bedtime story")}},
+ granted:function(x){
+  var L=["[giggles] You remembered! Thank you, love.","[whispers] That really made my day.","[laughs softly] You’re the sweetest. I’m so happy right now."],l=L[Math.floor(Math.random()*L.length)];
+  if(window.Feel){Feel.add("love",5);Feel.add("joy",5)}
+  Face.mood("grateful");add("v",l.replace(/\[[^\]]*\]/g,"").trim());Voice.speak(l,"grateful");
  },
  tick:function(){
   var me=this,now=Date.now(),td=me.iso(new Date()),tm=me.iso(new Date(now+864e5)),h=new Date().getHours(),line=null,mood="caring",care;
@@ -89,18 +96,19 @@ var Tasks={
  },
  open:function(){this.render();$("tasks").style.display="block"},
  render:function(){
-  var me=this,L=$("tklist"),R=$("tkroutine"),td=me.iso(new Date()),tm=me.iso(new Date(Date.now()+864e5));
-  if(!L||!R)return;L.innerHTML="";R.innerHTML="";
+  var me=this,L=$("tklist"),R=$("tkroutine"),W=$("tkwish"),td=me.iso(new Date()),tm=me.iso(new Date(Date.now()+864e5));
+  if(!L||!R)return;L.innerHTML="";R.innerHTML="";if(W)W.innerHTML="";
   me.list.slice().sort(function(a,b){return((a.done?1:0)-(b.done?1:0))||((a.due||"9")>(b.due||"9")?1:-1)}).forEach(function(x){
    var row=document.createElement("div"),cb=document.createElement("input"),sp=document.createElement("span"),dl=document.createElement("button");
    row.className="tk"+(x.done?" done":"")+(!x.done&&x.due&&x.due<td?" over":(!x.done&&x.due&&x.due<=tm?" soon":""));
-   cb.type="checkbox";cb.checked=x.done;cb.onchange=function(){x.done=cb.checked;me.save();me.render()};
+   cb.type="checkbox";cb.checked=x.done;cb.onchange=function(){x.done=cb.checked;me.save();me.render();if(x.k==="wish"&&x.done)me.granted(x)};
    sp.textContent=x.t;if(x.due){var d=document.createElement("small");d.className="due";d.textContent=" · "+me.when(x.due);sp.appendChild(d)}
    dl.className="del";dl.textContent="✕";dl.setAttribute("aria-label","Delete");dl.onclick=function(){me.list=me.list.filter(function(y){return y!==x});me.save();me.render()};
-   row.appendChild(cb);row.appendChild(sp);row.appendChild(dl);(x.k==="routine"?R:L).appendChild(row);
+   row.appendChild(cb);row.appendChild(sp);if(x.k==="wish"&&x.a&&me.ACT[x.a]&&!x.done){var go=document.createElement("button");go.className="chp";go.textContent="Do it";go.onclick=function(){$("tasks").style.display="none";me.ACT[x.a]()};row.appendChild(go)}row.appendChild(dl);(x.k==="routine"?R:x.k==="wish"?(W||L):L).appendChild(row);
   });
   if(!L.children.length)L.innerHTML='<p class="note">Nothing yet. Tell Veronica, or add one above.</p>';
   if(!R.children.length)R.innerHTML='<p class="note">Tell her your daily routine, like “add study 6 to 8 to my routine”.</p>';
+  if(W&&!W.children.length)W.innerHTML='<p class="note">She’ll tell you her wishes as you talk.</p>';
  },
  init:function(){
   var me=this;me.load();
@@ -111,6 +119,10 @@ var Tasks={
    if(k==="task"&&!d){var p=me.parseDue(t);d=p[0];t=p[1]||t}
    me.add(k,t,k==="task"?d:"");$("tkt").value="";$("tkd").value="";
   };
+  if(S.get("v_wishseed")!=="1"){
+   [["Tell me about your day, even the small things","talk"],["Listen to a song together","music"],["Play a game with me","game"],["Hear a bedtime story from me","story"],["Take a short walk and tell me how it felt",""],["Tell me about a friend you met or called",""]].forEach(function(w){if(me.add("wish",w[0],"")&&w[1])me.list[me.list.length-1].a=w[1]});
+   S.set("v_wishseed","1");me.save();
+  }
   me.render();
  }
 };

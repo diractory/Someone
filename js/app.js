@@ -49,7 +49,7 @@ async function ask(text,tone){
  var gm=Games.match(text);
  if(gm){Games.open(gm);busy=false;return}
  var wsq=Extras.isWeb(text)&&Brain.keys().some(function(k){return detect(k)==="gemini"});
- var act=Music.match(text)||(await Phone.handle(text))||(wsq?null:Actions.match(text));
+ var act=Cmds.match(text)||Music.match(text)||(await Phone.handle(text))||(wsq?null:Actions.match(text));
  if(act){
   hist.push({r:"v",t:act.say});add("v",act.say);if(act.url)addAction(act);save();var am=act.mood||"happy";Face.mood(am);busy=false;Voice.speak(act.say,am);if(act.run)act.run();return;
  }
@@ -77,8 +77,9 @@ async function ask(text,tone){
  if(/\[stop-music\]/i.test(out))Music.stop();
  var tr=/\[task:([^\]|]{1,100})(?:\|([^\]]{1,24}))?\]/gi,tm2;while((tm2=tr.exec(out)))Tasks.add("task",tm2[1].trim(),tm2[2]?Tasks.parseDue(tm2[2])[0]:"");
  var rr=/\[routine:([^\]]{1,100})\]/gi,rm2;while((rm2=rr.exec(out)))Tasks.add("routine",rm2[1].trim(),"");
+ var wr=/\[wish:([^\]]{1,100})\]/gi,wm;while((wm=wr.exec(out)))Tasks.add("wish",wm[1].trim(),"");
  var re=/\[remember:([^\]]{1,120})\]/gi,rm;while((rm=re.exec(out)))notes.push(rm[1].trim());
- var clean=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|caring|protective|admiring|determined|relieved|disappointed|amused|tender|insecure|content|calm)\]/gi,"").replace(/\[(name|remember|feel|task|routine|play):[^\]]*\]|\[stop-music\]/gi,""),sr=Extras.splitReply(clean),tail=sr.tail;
+ var clean=out.replace(/\[(happy|excited|shy|laugh|love|proud|curious|worried|sleepy|sad|pout|jealous|mad|surprised|playful|hurt|lonely|grateful|nervous|hopeful|annoyed|cozy|bored|embarrassed|guilty|caring|protective|admiring|determined|relieved|disappointed|amused|tender|insecure|content|calm)\]/gi,"").replace(/\[(name|remember|feel|task|routine|play|wish):[^\]]*\]|\[stop-music\]/gi,""),sr=Extras.splitReply(clean),tail=sr.tail;
  var spoken=sr.head.replace(/\s+/g," ").trim()||(tail?"Here you go.":"");
  out=spoken.replace(/\[([^\]]{2,24})\]/g,"*$1*").trim()||"Hmm?";
  tp.remove();Face.mood(mood);Feel.react(mood);
@@ -93,10 +94,10 @@ $("wakebtn").onclick=function(){$("wake").style.display="none";Voice.unlock();Vo
 $("mute").onclick=function(){if(Voice.speaking){Voice.interrupt();return}if(window.Music&&Music.holding()){Music.talk();return}if(!Voice.on){Voice.start();return}Voice.setMuted(!Voice.muted)};
 $("send").onclick=function(){var v=$("txt").value;$("txt").value="";ask(v)};
 $("txt").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("send").onclick()}});
-$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";keyInfo();$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";$("contacts").value=S.get("v_contacts")||"";$("mlib").value=S.get("v_music")===null?Music.DEFAULT:S.get("v_music");$("rel").value=S.get("v_rel")||"all";$("pref").checked=S.get("v_pref")!=="0";memRender();fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
+$("gear").onclick=function(){$("keys").value=S.get("v_keys")||"";keyInfo();$("nm").value=NAME;$("lang").value=Voice.lang;$("elkey").value=S.get("v_el")||"";$("elvoice").value=S.get("v_elvoice")||"";$("contacts").value=S.get("v_contacts")||"";$("cmds").value=S.get("v_cmds")||"";$("mlib").value=S.get("v_music")===null?Music.DEFAULT:S.get("v_music");$("rel").value=S.get("v_rel")||"all";$("pref").checked=S.get("v_pref")!=="0";memRender();fillVoices();$("nudge").checked=S.get("v_nudge")!=="0";$("set").style.display="block"};
 $("done").onclick=function(){
  S.set("v_keys",$("keys").value);NAME=$("nm").value.trim();S.set("v_name",NAME);
- Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_contacts",$("contacts").value);S.set("v_music",$("mlib").value);S.set("v_rel",$("rel").value);S.set("v_pref",$("pref").checked?"1":"0");Music.load();Music.render();S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
+ Voice.lang=$("lang").value;S.set("v_lang",Voice.lang);S.set("v_el",$("elkey").value.trim());S.set("v_elvoice",$("elvoice").value.trim());S.set("v_contacts",$("contacts").value);S.set("v_music",$("mlib").value);S.set("v_cmds",$("cmds").value);S.set("v_rel",$("rel").value);S.set("v_pref",$("pref").checked?"1":"0");Music.load();Music.render();S.set("v_nudge",$("nudge").checked?"1":"0");S.set("v_voice",$("vsel").value);S.set("v_pitch",$("vpitch").value);
  Voice.warned=false;Brain.cool={};$("set").style.display="none";if(Voice.on){Voice.stop();Voice.listen()}
 };
 $("clr").onclick=function(){hist=[];notes=[];diary=[];SUM="";S.set("v_sum","");save();$("log").innerHTML="";add("v","Fresh start. Hi again!")};
@@ -196,7 +197,7 @@ function setMode(m){document.body.classList.toggle("vm",m!=="chat");S.set("v_mod
 setMode(S.get("v_mode")||"voice");
 $("modebtn").onclick=function(){setMode(document.body.classList.contains("vm")?"chat":"voice")};
 (function(){
- var C=[["Play a song 🎵","Play a song that fits my mood"],["Roast me 😈","Roast me, playfully!"],["Quiz me 💊","Quiz me on pharmacology"],["Cheer me up 🌈","Cheer me up, I need it"],["Study plan 📚","Help me make a study plan for today"],["Code help 💻","I need help with coding. Ask me what I’m building."],["Story 🌙","Tell me a short sweet story"],["Games 🎮",""]];
+ var C=[["Play a song 🎵","Play a song that fits my mood"],["Her wishes 💫","What do you wish for? Tell me one thing you’d love us to do."],["Roast me 😈","Roast me, playfully!"],["Quiz me 💊","Quiz me on pharmacology"],["Cheer me up 🌈","Cheer me up, I need it"],["Study plan 📚","Help me make a study plan for today"],["Code help 💻","I need help with coding. Ask me what I’m building."],["Story 🌙","Tell me a short sweet story"],["Games 🎮",""]];
  C.forEach(function(c){var b=document.createElement("button");b.className="chp";b.textContent=c[0];b.onclick=function(){if(c[1])ask(c[1]);else Games.open("menu")};$("chips").appendChild(b)});
 })();
 
