@@ -46,6 +46,23 @@ var Brain={
   }
   throw last||{msg:"All keys are resting. Try again in a minute."};
  },
+ askMM:async function(hist,sys){
+  var me=this,files=Docs.binary(),ks=me.order().filter(function(k){return detect(k)==="gemini"&&(me.cool[k]||0)<=Date.now()}),i,k,r,j,ctl,t,c,text,ms=me.msgs(hist,"model").map(function(m){return{role:m.role,parts:[{text:m.text}]}});
+  if(!ms.length||ms[ms.length-1].role!=="user")ms.push({role:"user",parts:[{text:"(see the attachment)"}]});
+  files.forEach(function(f){ms[ms.length-1].parts.push({inline_data:{mime_type:f.mime,data:f.b64}})});
+  for(i=0;i<ks.length;i++){
+   k=ks[i];ctl=new AbortController();t=setTimeout(function(){ctl.abort()},70000);
+   try{
+    r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+CFG.providers.gemini.model+":generateContent",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json","x-goog-api-key":k},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:ms,generationConfig:{temperature:1,maxOutputTokens:2500}})});
+    j=await r.json().catch(function(){return{}});
+    if(!r.ok)throw{status:r.status,msg:(j.error&&j.error.message)||("HTTP "+r.status)};
+    c=j.candidates&&j.candidates[0];text=((c&&c.content&&c.content.parts)||[]).map(function(p){return p.text||""}).join("");
+    if(!text)throw{status:0,msg:"empty reply"};
+    clearTimeout(t);me.good(k);return text;
+   }catch(e){clearTimeout(t);me.bad(k,e)}
+  }
+  return me.ask(hist,sys+" Note: the attached image or PDF could not be read right now (it needs a working Gemini key). Tell the user this honestly and ask them to type or paste the key part.");
+ },
  askWeb:async function(hist,sys){
   var me=this,ks=me.order().filter(function(k){return detect(k)==="gemini"&&(me.cool[k]||0)<=Date.now()}),i,k,r,j,ctl,t,c,text,seen,ms=me.msgs(hist,"model").map(function(m){return{role:m.role,parts:[{text:m.text}]}});
   me.links=[];

@@ -18,7 +18,7 @@
 <div id="fx"></div>
 <div id="top">
 <div id="brand"><span class="dot"></span><b>Veronica</b></div>
-<div class="tr"><button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
+<div class="tr"><button id="taskbtn" class="ic" aria-label="Tasks and routine"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></button><button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
 </div>
 <div id="meters">
 <div class="mt"><i>💗</i><b><s id="m_love"></s></b></div>
@@ -29,14 +29,18 @@
 </div>
 <div id="status">Waiting</div>
 <div id="log" aria-live="polite"></div>
+<div id="atts"></div>
 <div id="chips"></div>
+<input id="fileIn" type="file" multiple accept="image/*,application/pdf,.pdf,.docx,.pptx,.txt,.md,.csv,.json,.html" style="display:none">
 <div id="bar">
 <input id="txt" type="text" placeholder="Type to Veronica…" autocomplete="off">
 
+<button id="attbtn" class="ic" aria-label="Attach a file or photo"><svg viewBox="0 0 24 24"><path d="M21 11l-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/></svg></button>
 <button id="musicbtn" class="ic" aria-label="Music"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
-<button id="gamebtn" class="ic" aria-label="Games"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5M15.5 11h.01M18 14h.01"/></svg></button>
+
 <button id="mute" aria-label="Microphone"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/><path class="sl" d="M4 4l16 16"/></svg></button>
-<button id="taskbtn" class="ic" aria-label="Tasks and routine"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></button>
+
+<button id="gamebtn" class="ic" aria-label="Games"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5M15.5 11h.01M18 14h.01"/></svg></button>
 <button id="modebtn" class="ic" aria-label="Switch between voice and chat view"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5A8 8 0 1 1 21 12z"/></svg></button>
 <button id="send" class="ic" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
 </div>
@@ -120,6 +124,7 @@
 <button class="btn" id="done">Save</button>
 </div></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/voice.js"></script>
@@ -133,6 +138,7 @@
 <script src="js/tasks.js"></script>
 <script src="js/music.js"></script>
 <script src="js/cmds.js"></script>
+<script src="js/docs.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -49,20 +49,21 @@ async function ask(text,tone){
  var gm=Games.match(text);
  if(gm){Games.open(gm);busy=false;return}
  var wsq=Extras.isWeb(text)&&Brain.keys().some(function(k){return detect(k)==="gemini"});
- var act=Cmds.match(text)||Music.match(text)||(await Phone.handle(text))||(wsq?null:Actions.match(text));
+ var act=Docs.match(text)||Cmds.match(text)||Music.match(text)||(await Phone.handle(text))||(wsq?null:Actions.match(text));
  if(act){
   hist.push({r:"v",t:act.say});add("v",act.say);if(act.url)addAction(act);save();var am=act.mood||"happy";Face.mood(am);busy=false;Voice.speak(act.say,am);if(act.run)act.run();return;
  }
  var loc=Extras.local(text);
  if(loc){var ls=loc.say.replace(/\[[^\]]*\]/g,"").trim();hist.push({r:"v",t:ls});add("v",ls);save();Face.mood(loc.mood);busy=false;Voice.speak(loc.say,loc.mood);loc.run();return}
  var wx=Extras.isWeather(text)?await Extras.weather():"";
+ var files=Docs.binary();
  var wk=await Extras.wiki(text);
  var hint=feelHint(text);
  status("Veronica is thinking…");
  var tp=add("v","");tp.textContent="…";tp.classList.add("typing");lastAct=Date.now();
  var out="";
  try{
-  out=await Brain[wsq?"askWeb":"ask"](hist,CFG.persona+wx+wk+hint+timeHint()+Feel.hint()+toneHint(ut)+Tasks.hint()+Music.hint()+relHint()+(SUM?" Summary of your earlier conversations with the user: "+SUM:"")+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
+  out=await Brain[files.length?"askMM":(wsq?"askWeb":"ask")](hist,CFG.persona+wx+wk+hint+timeHint()+Feel.hint()+toneHint(ut)+Tasks.hint()+Docs.hint()+Music.hint()+relHint()+(SUM?" Summary of your earlier conversations with the user: "+SUM:"")+(NAME?" The user’s name is "+NAME+".":" You don’t know the user’s name yet; ask for it sweetly once.")+(notes.length?" Things you remember about the user: "+notes.join("; ")+".":"")+(diary.length?" What you’ve noticed about how the user has been feeling lately, from what they told you: "+diary.slice(-12).map(function(d){return d.d+": "+d.f+(d.t?" ("+d.t+")":"")}).join("; ")+".":""));
  }catch(e){
   tp.remove();hist.pop();busy=false;Face.mood("sad");
   add("v",e.nokeys?"I need a free key first. Open ⚙ and paste one.":"I couldn’t answer: "+String(e.msg||"unknown problem").slice(0,150));
@@ -86,7 +87,7 @@ async function ask(text,tone){
  var bub=add("v",out);if(tail){richTail(bub,tail);setMode("chat")}
  if(wsq&&Brain.links&&Brain.links.length){addLinks(Brain.links,text);setMode("chat")}
  hist.push({r:"v",t:tail?out+"\n---\n"+tail.slice(0,3000):out});save();busy=false;
- Voice.speak(spoken||out,mood);maybeSummarize();
+ Voice.speak(spoken||out,mood);maybeSummarize();Docs.tick();
 }
 Voice.onText=function(t,r){lastAct=Date.now();ask(Voice.fix(t),r)};
 
