@@ -18,7 +18,7 @@
 <div id="fx"></div>
 <div id="top">
 <div id="brand"><span class="dot"></span><b>Veronica</b></div>
-<div class="tr"><button id="taskbtn" class="ic" aria-label="Tasks and routine"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></button><button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
+<div class="tr"><button id="kbbtn" class="ic" aria-label="Type instead"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button><button id="taskbtn" class="ic" aria-label="Tasks and routine"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></button><button id="gear" class="ic" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button></div>
 </div>
 <div id="meters">
 <div class="mt"><i>💗</i><b><s id="m_love"></s></b></div>
@@ -29,6 +29,7 @@
 </div>
 <div id="status">Waiting</div>
 <div id="log" aria-live="polite"></div>
+<div id="typebar"><input id="txt2" type="text" placeholder="Type to Veronica…" autocomplete="off"><button id="send2" class="ic" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button></div>
 <div id="atts"></div>
 <div id="chips"></div>
 <input id="fileIn" type="file" multiple accept="image/*,application/pdf,.pdf,.docx,.pptx,.txt,.md,.csv,.json,.html" style="display:none">
@@ -58,12 +59,13 @@
 <div id="wake"><div><div class="orb">💗</div><h1>Veronica</h1><p>Your companion, assistant and best friend.</p><button class="btn" id="wakebtn">Wake her up</button><p class="s">One tap is needed per visit because your browser blocks the mic until you do. After that she listens by herself.</p></div></div>
 
 <div id="tasks"><div class="sheet">
-<div class="shead"><h2>Tasks, routine &amp; wishes</h2><button class="ic" id="tkx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div class="shead"><h2>Tasks, wishes &amp; links</h2><button class="ic" id="tkx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <p class="note">Say “add homework pharmacology assignment due tomorrow”, or add one here. She reminds you while the app is open.</p>
 <div class="addrow"><input id="tkt" type="text" placeholder="What do you need to do?" autocomplete="off"><select id="tkk"><option value="task">Task / homework</option><option value="routine">Daily routine</option></select><input id="tkd" type="date"><button class="btn" id="tka">Add</button></div>
 <h3>Homework &amp; tasks</h3><div id="tklist"></div>
 <h3>Daily routine</h3><div id="tkroutine"></div>
 <h3>Her wishes 💫</h3><div id="tkwish"></div>
+<h3>Saved links 🔗</h3><div id="tklinks"></div>
 </div></div>
 
 <div id="set"><div class="sheet">

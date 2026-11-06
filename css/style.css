@@ -207,3 +207,8 @@ body.vm:not(.gaming) #log{bottom:calc(172px + env(safe-area-inset-bottom,0px))}
 .att button{border:0;background:none;color:var(--mut);padding:2px 6px;font-size:14px}
 .thumb{display:block;max-width:100%;max-height:150px;border-radius:10px;margin-top:6px}
 body.gaming #atts{display:none!important}
+
+#typebar{display:none;gap:8px;padding:6px 14px;align-items:center}
+#typebar input{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:24px;padding:12px 16px;font:inherit;font-size:16px;outline:none}
+body.typing #typebar{display:flex}
+body.gaming #typebar{display:none!important}

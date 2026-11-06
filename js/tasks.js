@@ -27,6 +27,11 @@ var Tasks={
   if(this.list.some(function(x){return!x.done&&x.k===k&&x.t.toLowerCase()===low}))return false;
   this.list.push({id:Date.now()+Math.random(),k:k,t:t,due:due||"",done:false,rem:0});this.save();this.render();return true;
  },
+ addLink:function(u,note){
+  if(!/^https?:\/\/[^\s]+$/i.test(u))return false;
+  var t=(note&&note.trim())||u.replace(/^https?:\/\/(www\.)?/,"").slice(0,60);
+  this.list.push({id:Date.now()+Math.random(),k:"link",t:t,u:u,due:"",done:false,rem:0});this.save();this.render();return true;
+ },
  find:function(q){
   var w=q.toLowerCase().replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(function(x){return x.length>2}),best=null,bs=0;
   this.list.forEach(function(x){if(x.done)return;var h=x.t.toLowerCase(),s=0;w.forEach(function(y){if(h.indexOf(y)>-1)s++});if(s>bs){bs=s;best=x}});
@@ -34,6 +39,8 @@ var Tasks={
  },
  match:function(text){
   var me=this,s=text.trim().replace(/[.!?]+$/,""),m,kind=null,rest=null;
+  m=s.match(/^(?:save|bookmark)\s+(?:this\s+)?(?:link\s+|reel\s+|video\s+|post\s+)?(https?:\/\/\S+)(?:\s+(.*))?$/i)||s.match(/^(https?:\/\/\S+)$/i);
+  if(m&&me.addLink(m[1],m[2]&&!/^https?:/i.test(m[2])?m[2]:""))return{mood:"happy",say:"Saved. You can open it any time from your list.",run:function(){}};
   m=s.match(/^(?:add|new|create|save)\s+(?:a\s+|my\s+)?(homework|assignment|task|exam|test|routine|reminder)\s*(?:to my (?:list|tasks?|routine))?\s*[:\-,]?\s*(.+)$/i);
   if(m){kind=m[1].toLowerCase();rest=m[2]}
   else if((m=s.match(/^add\s+(.+?)\s+to my routine$/i))){kind="routine";rest=m[1]}
@@ -96,19 +103,21 @@ var Tasks={
  },
  open:function(){this.render();$("tasks").style.display="block"},
  render:function(){
-  var me=this,L=$("tklist"),R=$("tkroutine"),W=$("tkwish"),td=me.iso(new Date()),tm=me.iso(new Date(Date.now()+864e5));
-  if(!L||!R)return;L.innerHTML="";R.innerHTML="";if(W)W.innerHTML="";
+  var me=this,L=$("tklist"),R=$("tkroutine"),W=$("tkwish"),Lk=$("tklinks"),td=me.iso(new Date()),tm=me.iso(new Date(Date.now()+864e5));
+  if(!L||!R)return;L.innerHTML="";R.innerHTML="";if(W)W.innerHTML="";if(Lk)Lk.innerHTML="";
   me.list.slice().sort(function(a,b){return((a.done?1:0)-(b.done?1:0))||((a.due||"9")>(b.due||"9")?1:-1)}).forEach(function(x){
    var row=document.createElement("div"),cb=document.createElement("input"),sp=document.createElement("span"),dl=document.createElement("button");
    row.className="tk"+(x.done?" done":"")+(!x.done&&x.due&&x.due<td?" over":(!x.done&&x.due&&x.due<=tm?" soon":""));
    cb.type="checkbox";cb.checked=x.done;cb.onchange=function(){x.done=cb.checked;me.save();me.render();if(x.k==="wish"&&x.done)me.granted(x)};
    sp.textContent=x.t;if(x.due){var d=document.createElement("small");d.className="due";d.textContent=" · "+me.when(x.due);sp.appendChild(d)}
    dl.className="del";dl.textContent="✕";dl.setAttribute("aria-label","Delete");dl.onclick=function(){me.list=me.list.filter(function(y){return y!==x});me.save();me.render()};
+   if(x.k==="link"){cb.style.display="none";var a=document.createElement("a");a.className="chp";a.href=x.u;a.target="_blank";a.rel="noopener";a.textContent="Open";sp.appendChild(document.createElement("span"));row.appendChild(sp);row.appendChild(a);row.appendChild(dl);Lk.appendChild(row);return}
    row.appendChild(cb);row.appendChild(sp);if(x.k==="wish"&&x.a&&me.ACT[x.a]&&!x.done){var go=document.createElement("button");go.className="chp";go.textContent="Do it";go.onclick=function(){$("tasks").style.display="none";me.ACT[x.a]()};row.appendChild(go)}row.appendChild(dl);(x.k==="routine"?R:x.k==="wish"?(W||L):L).appendChild(row);
   });
   if(!L.children.length)L.innerHTML='<p class="note">Nothing yet. Tell Veronica, or add one above.</p>';
   if(!R.children.length)R.innerHTML='<p class="note">Tell her your daily routine, like “add study 6 to 8 to my routine”.</p>';
   if(W&&!W.children.length)W.innerHTML='<p class="note">She’ll tell you her wishes as you talk.</p>';
+  if(Lk&&!Lk.children.length)Lk.innerHTML='<p class="note">Paste or type a link and say “save” before it, and it appears here.</p>';
  },
  init:function(){
   var me=this;me.load();

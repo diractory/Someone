@@ -237,3 +237,12 @@ function memRender(){
  if(!L.children.length)L.innerHTML='<p class="note">Nothing yet. She learns as you talk.</p>';
 }
 $("memclear").onclick=function(){SUM="";S.set("v_sum","");memRender()};
+
+$("kbbtn").onclick=function(){
+ var on=!document.body.classList.contains("typing");
+ document.body.classList.toggle("typing",on);
+ if(on){setMode("chat");setTimeout(function(){$("txt2").focus()},60)}
+};
+function sendTyped(){var v=$("txt2").value;$("txt2").value="";lastAct=Date.now();ask(v)}
+$("send2").onclick=sendTyped;
+$("txt2").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();sendTyped()}});
